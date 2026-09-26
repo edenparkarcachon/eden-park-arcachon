@@ -62,7 +62,7 @@ Adresse : **https://edenpark-arcachon.fr/admin/**. Le mot de passe est défini d
   Tout est vérifié à l'enregistrement : horaires bien écrits, retour d'au moins 14 jours, liens valides… Les informations officielles (SIRET, TVA, RCS) ne sont pas modifiables.
 - **Médiathèque** : chaque bouton « Changer la photo » ouvre la liste de toutes les photos du site. On peut en choisir une ou en envoyer une nouvelle. Elle est aussi accessible depuis la fiche produit (« Choisir dans la médiathèque »).
 
-Tout ce qui est modifié dans l'admin est stocké dans Netlify Blobs, puis réinjecté dans `data/*.json` à chaque construction (`scripts/sync-catalog.mjs`). Les fichiers du dépôt ne servent que de valeurs de départ.
+Tout ce qui est modifié dans l'admin est stocké dans Netlify Blobs, puis réinjecté dans `data/*.json` à chaque construction par le plugin de build `netlify/plugins/sync-catalog` (qui appelle `scripts/sync-catalog.mjs`). Les fichiers du dépôt ne servent que de valeurs de départ.
 
 ## Mise en ligne (étapes)
 
