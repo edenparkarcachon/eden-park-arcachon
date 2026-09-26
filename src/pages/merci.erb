@@ -1,0 +1,11 @@
+<section class="error-page" data-thanks>
+  <div class="wrap wrap--narrow">
+    <div class="bow-sep"><%= bow(cls: '') %></div>
+    <h1>Merci pour votre commande !</h1>
+    <p class="lead" style="margin:0 auto 18px">Votre paiement a bien été reçu. Vous allez recevoir un e-mail de confirmation avec le récapitulatif de votre commande.</p>
+    <p>Nous préparons votre colis avec soin dans notre boutique d'Arcachon. Si vous avez choisi le retrait en boutique, nous vous prévenons dès qu'il est prêt.</p>
+    <div class="notice" data-demo-notice hidden style="text-align:left">Mode démonstration : aucun paiement réel n'a été effectué. Le paiement Stripe sera actif une fois les clés configurées (voir README).</div>
+    <p style="margin-top:30px"><a class="btn" href="/boutique/">Continuer mes achats</a></p>
+    <p style="margin-top:16px;font-size:.9rem;color:var(--muted)">Une question ? <a href="/contact/">Contactez-nous</a> ou appelez le <a href="tel:<%= SITE['phone_intl'] %>"><%= h(SITE['phone']) %></a>.</p>
+  </div>
+</section>

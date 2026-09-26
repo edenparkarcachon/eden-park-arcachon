@@ -1,0 +1,72 @@
+<% co = CONTENT['collection'] -%>
+<header class="page-head">
+  <div class="wrap">
+    <p class="eyebrow"><%= h(co['eyebrow']) %></p>
+    <h1><%= h(co['title']) %></h1>
+    <p class="lead"><%= h(co['lead']) %></p>
+  </div>
+</header>
+
+<% unless co['hero_looks'].empty? -%>
+<section class="wrap" aria-label="Silhouettes de la collection">
+  <div class="look">
+<% co['hero_looks'].each_with_index do |lk, i| -%>
+    <figure class="<%= i.even? ? 'l-a' : 'l-b' %> fade-up">
+      <%= content_img(lk, sizes: i.even? ? '(max-width: 760px) 100vw, 58vw' : '(max-width: 760px) 100vw, 42vw') %>
+<% unless lk['title'].to_s.empty? && lk['subtitle'].to_s.empty? -%>
+      <figcaption><strong><%= h(lk['title']) %></strong><%= h(lk['subtitle']) %></figcaption>
+<% end -%>
+    </figure>
+<% end -%>
+  </div>
+<% unless co['hero_button_label'].to_s.empty? -%>
+  <p class="center" style="margin:28px 0 70px"><a class="btn" href="<%= h(co['hero_button_link']) %>"><%= h(co['hero_button_label']) %></a></p>
+<% end -%>
+</section>
+<% end -%>
+
+<% st = co['story'] -%>
+<section class="section section--sand">
+  <div class="wrap">
+    <div class="split">
+      <div class="split__media fade-up">
+        <%= content_img(st['image'], sizes: '(max-width: 860px) 100vw, 50vw') %>
+<% unless st['tag'].to_s.empty? -%>
+        <span class="tag"><%= h(st['tag']) %></span>
+<% end -%>
+      </div>
+      <div>
+        <p class="eyebrow"><%= h(st['eyebrow']) %></p>
+        <h2><%= h(st['title']) %></h2>
+<% st['paragraphs'].each do |para| -%>
+        <p><%= h(para) %></p>
+<% end -%>
+        <a class="btn" href="/boutique/">Voir toute la collection</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<% se = co['season'] -%>
+<% unless se['looks'].empty? -%>
+<section class="section" aria-labelledby="h-saison">
+  <div class="wrap">
+    <div class="center">
+      <p class="eyebrow"><%= h(se['eyebrow']) %></p>
+      <h2 id="h-saison"><%= h(se['title']) %></h2>
+      <p class="lead" style="margin-bottom:40px"><%= h(se['lead']) %></p>
+    </div>
+    <div class="look">
+<% se['looks'].each do |lk| -%>
+      <figure class="l-c fade-up">
+        <%= content_img(lk, sizes: '(max-width: 760px) 50vw, 33vw') %>
+<% unless lk['title'].to_s.empty? && lk['subtitle'].to_s.empty? -%>
+        <figcaption><strong><%= h(lk['title']) %></strong><%= h(lk['subtitle']) %></figcaption>
+<% end -%>
+      </figure>
+<% end -%>
+    </div>
+    <p class="center" style="margin-top:36px"><a class="btn btn--ghost" href="/boutique-arcachon/">Venir en boutique</a></p>
+  </div>
+</section>
+<% end -%>

@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="fr" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= h(title) %></title>
+  <meta name="description" content="<%= h(description) %>">
+<% if noindex -%>
+  <meta name="robots" content="noindex, follow">
+<% else -%>
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <link rel="canonical" href="<%= abs_url(path) %>">
+<% end -%>
+  <meta name="theme-color" content="#020a1f">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="geo.region" content="FR-33">
+  <meta name="geo.placename" content="Arcachon">
+  <meta name="geo.position" content="<%= SITE['geo']['lat'] %>;<%= SITE['geo']['lng'] %>">
+  <meta name="ICBM" content="<%= SITE['geo']['lat'] %>, <%= SITE['geo']['lng'] %>">
+
+  <meta property="og:site_name" content="Eden Park Arcachon">
+  <meta property="og:locale" content="fr_FR">
+  <meta property="og:type" content="<%= og_type || 'website' %>">
+  <meta property="og:title" content="<%= h(title) %>">
+  <meta property="og:description" content="<%= h(description) %>">
+  <meta property="og:url" content="<%= abs_url(path) %>">
+  <meta property="og:image" content="<%= abs_url(image || '/assets/img/og-eden-park-arcachon.jpg') %>">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="preload" href="/assets/fonts/jost-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="<%= asset('css/style.css') %>">
+<% schemas.each do |s| -%>
+  <%= json_ld(s) %>
+<% end -%>
+  <script>document.documentElement.classList.remove('no-js');</script>
+</head>
+<body class="<%= body_class %>">
+  <a class="skip-link" href="#contenu">Aller au contenu</a>
+
+  <div class="announce" role="note">
+    <div class="announce__inner">
+<% CONTENT['announcement'].each do |msg| -%>
+      <span><%= h(msg) %></span>
+<% end -%>
+    </div>
+  </div>
+
+  <header class="header">
+    <div class="wrap header__inner">
+      <nav class="nav nav--left" aria-label="Navigation principale">
+        <div class="nav__dd">
+          <a href="/boutique/"<%= path.start_with?('/boutique/') ? ' aria-current="page"' : '' %>>Boutique</a>
+          <div class="nav__dd-panel">
+<% shop_cats.each do |c| -%>
+            <a href="<%= category_url(c) %>"><%= h(c['name']) %></a>
+<% end -%>
+            <a href="/boutique/">Tout voir</a>
+          </div>
+        </div>
+        <a href="/notre-collection/"<%= path == '/notre-collection/' ? ' aria-current="page"' : '' %>>Collection</a>
+        <a href="/personnalisation/"<%= path == '/personnalisation/' ? ' aria-current="page"' : '' %>>Personnalisation</a>
+      </nav>
+
+      <button class="icon-btn burger" type="button" aria-label="Ouvrir le menu" aria-controls="menu-mobile" aria-expanded="false" data-open="menu-mobile"><%= icon('menu') %></button>
+
+      <%= logo %>
+
+      <div class="nav nav--right">
+        <a class="nav__link" href="/boutique-arcachon/"<%= path == '/boutique-arcachon/' ? ' aria-current="page"' : '' %>>La boutique</a>
+        <a class="nav__link" href="/contact/"<%= path == '/contact/' ? ' aria-current="page"' : '' %>>Contact</a>
+        <a class="icon-btn" href="/panier/" aria-label="Panier" data-open="mini-cart"><%= icon('bag') %><span class="cart-count" data-cart-count data-count="0">0</span></a>
+      </div>
+    </div>
+  </header>
+
+  <main id="contenu">
+<% if crumbs && path != '/' -%>
+    <%= breadcrumb(crumbs) %>
+<% end -%>
+<!--CONTENT-->
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer__grid">
+      <div>
+        <%= logo %>
+        <p><%= h(CONTENT['footer_text']) %></p>
+        <div class="socials">
+          <a href="<%= h(SITE['social']['instagram']) %>" rel="noopener" target="_blank" aria-label="Instagram Eden Park Arcachon"><%= icon('instagram') %></a>
+          <a href="<%= h(SITE['social']['facebook']) %>" rel="noopener" target="_blank" aria-label="Facebook Eden Park Arcachon"><%= icon('facebook') %></a>
+        </div>
+      </div>
+      <div>
+        <h2>Boutique en ligne</h2>
+        <ul>
+<% shop_cats.each do |c| -%>
+          <li><a href="<%= category_url(c) %>"><%= h(c['name']) %></a></li>
+<% end -%>
+          <li><a href="/notre-collection/">Notre collection</a></li>
+          <li><a href="/personnalisation/">Personnalisation</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Aide</h2>
+        <ul>
+          <li><a href="/livraison-retours/">Livraison et retours</a></li>
+          <li><a href="/faq/">FAQ</a></li>
+          <li><a href="/faq/#guide-des-tailles">Guide des tailles</a></li>
+          <li><a href="/contact/">Nous contacter</a></li>
+          <li><a href="/cgv/">CGV</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Eden Park Arcachon</h2>
+        <address><%= address_html %><br><a href="tel:<%= SITE['phone_intl'] %>"><%= h(SITE['phone']) %></a></address>
+        <p style="margin-top:10px"><%= SITE['hours'].map { |r| "#{h(r['days'])} : #{h(slots_label(r))}" }.join('<br>') %></p>
+        <form class="newsletter-form" <%= netlify_form_attrs('newsletter') %>>
+          <%= form_hidden('newsletter') %>
+          <label class="sr-only" for="nl-email">Votre adresse e-mail</label>
+          <div class="newsletter">
+            <input id="nl-email" type="email" name="email" placeholder="Votre e-mail pour nos nouveautés" autocomplete="email" required>
+            <button class="btn btn--pink" type="submit">OK</button>
+          </div>
+          <label class="consent" for="nl-consent"><input type="checkbox" id="nl-consent" name="consentement-rgpd" value="oui" required> <span>J'accepte de recevoir les nouveautés d'Eden Park Arcachon. Désinscription à tout moment. <a href="/confidentialite/">En savoir plus</a></span></label>
+        </form>
+      </div>
+    </div>
+    <div class="wrap footer__bottom">
+      <span>© <%= Date.today.year %> Eden Park Arcachon – MAMIL27 SAS. Eden Park® est une marque déposée.</span>
+      <ul>
+        <li><a href="/mentions-legales/">Mentions légales</a></li>
+        <li><a href="/cgv/">CGV</a></li>
+        <li><a href="/confidentialite/">Confidentialité</a></li>
+        <li><a href="/cookies/">Cookies</a></li>
+        <li><button type="button" data-cookie-prefs>Gérer les cookies</button></li>
+      </ul>
+    </div>
+  </footer>
+
+  <!-- Menu mobile -->
+  <div class="drawer drawer--left" id="menu-mobile" aria-hidden="true">
+    <div class="drawer__backdrop" data-close></div>
+    <div class="drawer__panel" role="dialog" aria-modal="true" aria-label="Menu">
+      <div class="drawer__head"><p class="drawer__title">Menu</p><button class="icon-btn" type="button" data-close aria-label="Fermer le menu"><%= icon('close') %></button></div>
+      <nav class="drawer__body mobile-nav" aria-label="Navigation mobile">
+        <a href="/boutique/">Boutique</a>
+        <div class="sub">
+<% shop_cats.each do |c| -%>
+          <a href="<%= category_url(c) %>"><%= h(c['name']) %></a>
+<% end -%>
+        </div>
+        <a href="/notre-collection/">Notre collection</a>
+        <a href="/personnalisation/">Personnalisation</a>
+        <a href="/boutique-arcachon/">La boutique d'Arcachon</a>
+        <a href="/contact/">Contact</a>
+        <a href="/faq/">FAQ</a>
+        <div class="mobile-nav__info">
+          <p><%= address_html %><br><a href="tel:<%= SITE['phone_intl'] %>"><%= h(SITE['phone']) %></a></p>
+        </div>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Mini-panier -->
+  <div class="drawer drawer--right" id="mini-cart" aria-hidden="true">
+    <div class="drawer__backdrop" data-close></div>
+    <div class="drawer__panel" role="dialog" aria-modal="true" aria-label="Panier">
+      <div class="drawer__head"><p class="drawer__title">Mon panier</p><button class="icon-btn" type="button" data-close aria-label="Fermer le panier"><%= icon('close') %></button></div>
+      <div class="drawer__body" data-mini-cart></div>
+      <div class="drawer__foot" data-mini-foot>
+        <div class="free-ship" data-free-ship></div>
+        <div class="totals-row"><span>Sous-total</span><span data-subtotal>0 €</span></div>
+        <a class="btn btn--block" href="/panier/">Voir le panier et commander</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bandeau cookies (RGPD) -->
+  <div class="cookie" id="cookie" role="dialog" aria-labelledby="cookie-title" aria-live="polite">
+    <h2 id="cookie-title">Votre vie privée, notre priorité</h2>
+    <p>Nous utilisons des cookies nécessaires au fonctionnement du site (panier, préférences) et, avec votre accord, des cookies de mesure d'audience pour améliorer votre expérience. Votre choix est conservé 12 mois. <a href="/cookies/">En savoir plus</a></p>
+    <div class="cookie__prefs">
+      <div class="toggle-row"><span>Cookies nécessaires<small>Panier, sécurité, préférences</small></span><strong>Toujours actifs</strong></div>
+      <label class="toggle-row" for="ck-analytics"><span>Mesure d'audience<small>Google Analytics, statistiques anonymisées</small></span><input type="checkbox" id="ck-analytics"></label>
+    </div>
+    <div class="cookie__actions">
+      <button class="btn btn--ghost" type="button" data-cookie="refuse">Tout refuser</button>
+      <button class="btn btn--ghost" type="button" data-cookie="custom">Personnaliser</button>
+      <button class="btn" type="button" data-cookie="accept">Tout accepter</button>
+    </div>
+  </div>
+
+  <script src="<%= asset('js/catalog.js') %>" defer></script>
+  <script src="<%= asset('js/main.js') %>" defer></script>
+</body>
+</html>

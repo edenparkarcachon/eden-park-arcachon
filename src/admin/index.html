@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Administration | Eden Park Arcachon</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <!-- Connexion -->
+  <main class="login" id="login" hidden>
+    <form class="login__box" id="login-form">
+      <p class="brand">Eden <span class="bow" aria-hidden="true"></span> Park <small>Arcachon</small></p>
+      <h1>Espace administration</h1>
+      <label for="pwd">Mot de passe</label>
+      <input id="pwd" type="password" autocomplete="current-password" required>
+      <p class="error" id="login-error" hidden></p>
+      <button class="btn" type="submit">Se connecter</button>
+    </form>
+  </main>
+
+  <!-- Application -->
+  <div id="app" hidden>
+    <header class="top">
+      <p class="brand">Eden <span class="bow" aria-hidden="true"></span> Park <small>Admin</small></p>
+      <nav class="tabs" aria-label="Sections">
+        <button type="button" data-tab="products" aria-current="true">Produits</button>
+        <button type="button" data-tab="stock">Stock</button>
+        <button type="button" data-tab="orders">Commandes</button>
+        <button type="button" data-tab="pages">Pages &amp; photos</button>
+        <button type="button" data-tab="categories">Catégories</button>
+        <button type="button" data-tab="settings">Réglages</button>
+      </nav>
+      <div class="top__right">
+        <a href="/" target="_blank" rel="noopener">Voir le site ↗</a>
+        <button type="button" class="link" id="logout">Se déconnecter</button>
+      </div>
+    </header>
+
+    <!-- Produits -->
+    <section class="view" data-view="products">
+      <div class="view__head">
+        <div>
+          <h1>Produits</h1>
+          <p class="muted">Cliquez sur un produit pour le modifier. Après chaque enregistrement, le site est mis à jour automatiquement en 1 à 2 minutes.</p>
+        </div>
+        <button class="btn" type="button" id="new-product">+ Nouveau produit</button>
+      </div>
+      <div class="plist" id="plist"></div>
+    </section>
+
+    <!-- Éditeur de produit -->
+    <section class="view" data-view="editor" hidden>
+      <form id="editor" novalidate>
+        <div class="view__head sticky">
+          <div>
+            <button type="button" class="link" data-back>← Retour aux produits</button>
+            <h1 id="ed-title">Nouveau produit</h1>
+          </div>
+          <div class="actions">
+            <button type="button" class="btn btn--ghost danger" id="ed-delete">Supprimer</button>
+            <button type="submit" class="btn">Enregistrer et publier</button>
+          </div>
+        </div>
+        <p class="error" id="ed-error" hidden></p>
+
+        <div class="cols">
+          <div>
+            <fieldset class="card">
+              <legend>Informations</legend>
+              <div class="field"><label for="f-name">Nom du produit *</label><input id="f-name" required placeholder="Polo « Dune du Pyla »"></div>
+              <div class="field"><label for="f-slug">Adresse de la page</label><div class="prefix"><span>/produit/</span><input id="f-slug" pattern="[a-z0-9-]+"></div><small id="f-slug-help">Générée à partir du nom. Elle ne pourra plus changer ensuite (bon pour Google).</small></div>
+              <div class="row">
+                <div class="field"><label for="f-cat">Catégorie *</label><select id="f-cat"></select></div>
+                <div class="field"><label for="f-price">Prix TTC (€) *</label><input id="f-price" type="number" min="0" step="0.01" inputmode="decimal" required></div>
+              </div>
+              <div class="row">
+                <div class="field"><label for="f-fit">Coupe</label><input id="f-fit" placeholder="Coupe droite"></div>
+                <div class="field"><label for="f-badges">Étiquettes</label><input id="f-badges" placeholder="Nouveau, Exclusif"><small>Séparées par des virgules</small></div>
+              </div>
+              <label class="check"><input type="checkbox" id="f-featured"> Mettre en avant sur la page d'accueil</label>
+            </fieldset>
+
+            <fieldset class="card">
+              <legend>Textes</legend>
+              <div class="field"><label for="f-short">Résumé (1 phrase) *</label><input id="f-short" maxlength="180" required><small>Affiché sous le prix et utilisé par Google.</small></div>
+              <div class="field"><label for="f-desc">Description</label><textarea id="f-desc" rows="6"></textarea><small>Laissez une ligne vide entre deux paragraphes.</small></div>
+              <div class="field"><label for="f-details">Détails</label><textarea id="f-details" rows="5" placeholder="Maille piqué de coton&#10;Broderie poitrine"></textarea><small>Un détail par ligne.</small></div>
+              <div class="field"><label for="f-care">Entretien</label><input id="f-care" placeholder="Lavage en machine à 30 °C…"></div>
+            </fieldset>
+          </div>
+
+          <div>
+            <fieldset class="card">
+              <legend>Couleurs</legend>
+              <div id="colors"></div>
+              <button type="button" class="btn btn--ghost btn--sm" id="add-color">+ Ajouter une couleur</button>
+            </fieldset>
+
+            <fieldset class="card">
+              <legend>Tailles</legend>
+              <div class="chips" id="sizes"></div>
+            </fieldset>
+
+            <fieldset class="card">
+              <legend>Stock</legend>
+              <p class="muted small">Quantité disponible par couleur et par taille. Case vide = stock non suivi. À 0, l'article reste en vente avec un délai de <strong><span data-bo-days>15</span> jours</strong>. Le stock baisse automatiquement à chaque commande payée.</p>
+              <div class="table-wrap" id="stock-grid"></div>
+            </fieldset>
+
+            <fieldset class="card">
+              <legend>Photos</legend>
+              <p class="muted small">La première photo est la photo principale. Formats JPEG, PNG ou HEIC : elles sont automatiquement redimensionnées. Décrivez chaque photo (texte alternatif) : c'est important pour Google.</p>
+              <div class="photos" id="photos"></div>
+              <label class="btn btn--ghost btn--sm upload">
+                <input type="file" id="upload" accept="image/*" multiple hidden>
+                + Envoyer des photos
+              </label>
+              <button type="button" class="btn btn--ghost btn--sm" id="pick-product-photo">Choisir dans la médiathèque</button>
+              <p class="muted small" id="upload-status"></p>
+            </fieldset>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- Stock global -->
+    <section class="view" data-view="stock" hidden>
+      <div class="view__head sticky">
+        <div>
+          <h1>Stock</h1>
+          <p class="muted">Case vide = non suivi. À 0, l'article reste commandable avec un délai de <span data-bo-days>15</span> jours. Les modifications sont visibles immédiatement sur le site.</p>
+        </div>
+        <button class="btn" type="button" id="save-stock" disabled>Enregistrer le stock</button>
+      </div>
+      <div id="stock-all"></div>
+    </section>
+
+    <!-- Commandes -->
+    <section class="view" data-view="orders" hidden>
+      <div class="view__head">
+        <div>
+          <h1>Commandes</h1>
+          <p class="muted">Commandes payées (les 100 dernières). Le détail complet et les remboursements se gèrent dans le tableau de bord Stripe.</p>
+        </div>
+        <div class="actions">
+          <a class="btn btn--ghost" href="https://dashboard.stripe.com/payments" target="_blank" rel="noopener">Ouvrir Stripe ↗</a>
+          <button class="btn" type="button" id="refresh-orders">Actualiser</button>
+        </div>
+      </div>
+      <div id="orders"></div>
+    </section>
+
+    <!-- Pages & photos, Catégories, Réglages (formulaires générés par admin.js) -->
+    <section class="view" data-view="pages" hidden>
+      <div class="view__head sticky">
+        <div>
+          <h1>Pages &amp; photos</h1>
+          <p class="muted">Textes et photos des pages du site. Cliquez sur « Changer la photo » pour en choisir une autre ou en envoyer une nouvelle.</p>
+        </div>
+        <button class="btn" type="button" data-save="pages">Enregistrer et publier</button>
+      </div>
+      <nav class="subtabs" id="page-subtabs" aria-label="Pages"></nav>
+      <div id="pages-form"></div>
+    </section>
+
+    <section class="view" data-view="categories" hidden>
+      <div class="view__head sticky">
+        <div>
+          <h1>Catégories</h1>
+          <p class="muted">Rubriques de la boutique (menu, page d'accueil, filtres). Une catégorie qui contient des produits ne peut pas être supprimée.</p>
+        </div>
+        <button class="btn" type="button" data-save="categories">Enregistrer et publier</button>
+      </div>
+      <div id="categories-form"></div>
+    </section>
+
+    <section class="view" data-view="settings" hidden>
+      <div class="view__head sticky">
+        <div>
+          <h1>Réglages</h1>
+          <p class="muted">Coordonnées, horaires, livraison, retours et mentions légales. Ces informations apparaissent sur tout le site.</p>
+        </div>
+        <button class="btn" type="button" data-save="settings">Enregistrer et publier</button>
+      </div>
+      <div id="settings-form"></div>
+    </section>
+  </div>
+
+  <!-- Médiathèque : choisir ou envoyer une photo -->
+  <dialog id="picker" aria-labelledby="picker-title">
+    <div class="picker__head">
+      <h2 id="picker-title">Choisir une photo</h2>
+      <label class="btn btn--sm">
+        <input type="file" id="picker-upload" accept="image/*" hidden>
+        Envoyer une nouvelle photo
+      </label>
+      <button type="button" class="icon" data-picker-close aria-label="Fermer">✕</button>
+    </div>
+    <p class="muted small" id="picker-status"></p>
+    <div class="picker__grid" id="picker-grid"></div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="admin.js"></script>
+</body>
+</html>

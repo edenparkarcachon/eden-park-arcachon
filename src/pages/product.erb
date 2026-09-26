@@ -1,0 +1,116 @@
+<% imgs = product_images(p); single_size = p['sizes'].size == 1 -%>
+<div class="wrap product" data-product="<%= p['slug'] %>">
+  <div class="gallery" data-gallery>
+    <div class="gallery__thumbs" role="group" aria-label="Photos du produit">
+<% imgs.each_with_index do |im, i| -%>
+      <button type="button" data-thumb="<%= i %>" data-variant="<%= h(im['variant']) %>" aria-label="Voir la photo <%= i + 1 %>"<%= i.zero? ? ' aria-current="true"' : '' %>><%= img_tag(im, sizes: '76px', alt: '') %></button>
+<% end -%>
+    </div>
+    <div class="gallery__main">
+<% imgs.each_with_index do |im, i| -%>
+      <figure class="<%= i.zero? ? 'is-active' : '' %>" data-slide="<%= i %>"><%= img_tag(im, sizes: '(max-width: 900px) 100vw, 55vw', priority: i.zero?, loading: i.zero? ? 'eager' : 'lazy') %></figure>
+<% end -%>
+    </div>
+  </div>
+
+  <div class="pinfo">
+    <p class="eyebrow"><a href="<%= category_url(c) %>" style="text-decoration:none"><%= h(c['name']) %></a> · Eden Park Arcachon</p>
+    <h1><%= h(p['name']) %></h1>
+    <p class="pinfo__price"><%= euro(p['price']) %></p>
+    <p class="pinfo__tax">TTC · Livraison offerte dès <%= euro(SITE['shipping']['free_threshold']) %></p>
+    <p class="pinfo__short"><%= h(p['short']) %></p>
+
+    <form data-add-form novalidate>
+      <input type="hidden" name="slug" value="<%= p['slug'] %>">
+      <fieldset class="opt">
+        <legend class="opt__label">Couleur <em data-color-label><%= h(p['colors'][0]['name']) %></em></legend>
+        <div class="color-opts">
+<% p['colors'].each_with_index do |col, i| -%>
+          <label class="color-opt" title="<%= h(col['name']) %>">
+            <input type="radio" name="color" value="<%= h(col['name']) %>"<%= i.zero? ? ' checked' : '' %>>
+            <span style="background:<%= col['hex'] %>"><% if col['accent'] && col['accent'] != col['hex'] %><i style="background:<%= col['accent'] %>"></i><% end %></span>
+            <span class="sr-only"><%= h(col['name']) %></span>
+          </label>
+<% end -%>
+        </div>
+      </fieldset>
+
+      <fieldset class="opt">
+        <legend class="opt__label">Taille <% unless single_size %><button type="button" data-open-dialog="size-guide"><%= icon('ruler', cls: '').sub('<svg', '<svg style="display:inline;width:18px;vertical-align:-4px;margin-right:4px"') %>Guide des tailles</button><% end %></legend>
+        <div class="size-opts">
+<% p['sizes'].each do |s| -%>
+          <label class="chip"><input type="radio" name="size" value="<%= h(s) %>"<%= single_size ? ' checked' : '' %>><span><%= h(s) %></span></label>
+<% end -%>
+        </div>
+        <p class="opt__error" data-size-error hidden>Veuillez choisir une taille.</p>
+        <p class="availability" data-availability aria-live="polite"></p>
+      </fieldset>
+
+      <div class="buy">
+        <div class="qty">
+          <button type="button" data-qty="-1" aria-label="Diminuer la quantité">−</button>
+          <label class="sr-only" for="qty">Quantité</label>
+          <input id="qty" type="number" name="qty" value="1" min="1" max="10" inputmode="numeric">
+          <button type="button" data-qty="1" aria-label="Augmenter la quantité">+</button>
+        </div>
+        <button class="btn" type="submit">Ajouter au panier</button>
+      </div>
+    </form>
+
+    <ul class="pmini">
+      <li><%= icon('truck') %><span>Livraison Colissimo <%= SITE['shipping']['metro_delay'] %> · offerte dès <%= euro(SITE['shipping']['free_threshold']) %></span></li>
+      <li><%= icon('store') %><span>Retrait gratuit à la boutique d'Arcachon</span></li>
+      <li><%= icon('return') %><span>Retours et échanges sous <%= SITE['return_days'] %> jours</span></li>
+      <li><%= icon('lock') %><span>Paiement sécurisé par Stripe</span></li>
+    </ul>
+
+    <details class="acc" open>
+      <summary>Description</summary>
+      <div class="acc__body">
+<% p['description'].each do |para| -%>
+        <p><%= h(para) %></p>
+<% end -%>
+      </div>
+    </details>
+    <details class="acc">
+      <summary>Détails & entretien</summary>
+      <div class="acc__body">
+        <ul>
+<% p['details'].each do |d| -%>
+          <li><%= h(d) %></li>
+<% end -%>
+        </ul>
+        <p style="margin-top:12px"><strong>Entretien :</strong> <%= h(p['care']) %></p>
+      </div>
+    </details>
+    <details class="acc">
+      <summary>Livraison & retours</summary>
+      <div class="acc__body">
+        <p>France métropolitaine : <%= euro(SITE['shipping']['metro_price']) %>, offerte dès <%= euro(SITE['shipping']['free_threshold']) %> (<%= SITE['shipping']['metro_delay'] %>). DOM-TOM : <%= euro(SITE['shipping']['domtom_price']) %> (<%= SITE['shipping']['domtom_delay'] %>). Retrait en boutique gratuit.</p>
+        <p>Vous disposez de <%= SITE['return_days'] %> jours pour nous retourner un article ou l'échanger en boutique. <a href="/livraison-retours/">Tout savoir</a></p>
+      </div>
+    </details>
+  </div>
+</div>
+
+<% unless single_size -%>
+<dialog id="size-guide" aria-labelledby="sg-title">
+  <div class="dialog__head"><h2 id="sg-title">Guide des tailles Eden Park</h2><button class="icon-btn" type="button" data-close-dialog aria-label="Fermer"><%= icon('close') %></button></div>
+  <div class="dialog__body">
+    <p>Nos modèles reprennent les tailles de la marque Eden Park. Mesurez votre tour de poitrine sous les bras, à l'endroit le plus large, et votre tour de taille au niveau du nombril.</p>
+    <%= size_table %>
+    <p style="font-size:.9rem;color:var(--muted)">Entre deux tailles ? Pour une coupe plus décontractée, prenez la taille au-dessus. Besoin d'un conseil ? Appelez la boutique au <a href="tel:<%= SITE['phone_intl'] %>"><%= h(SITE['phone']) %></a>.</p>
+  </div>
+</dialog>
+<% end -%>
+
+<section class="section section--sand" aria-labelledby="h-related">
+  <div class="wrap">
+    <div class="section-head"><h2 id="h-related">Vous aimerez aussi</h2><a class="link-arrow" href="/boutique/">Toute la boutique <%= icon('arrow') %></a></div>
+    <div class="grid">
+<% related.each do |r| -%>
+      <%= product_card(r) %>
+<% end -%>
+    </div>
+  </div>
+</section>

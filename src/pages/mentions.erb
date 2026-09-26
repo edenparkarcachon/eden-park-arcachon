@@ -1,0 +1,32 @@
+<% l = SITE['legal'] -%>
+<header class="page-head page-head--sand"><div class="wrap"><h1>Mentions légales</h1><p class="lead">Dernière mise à jour : <%= Date.today.strftime('%d/%m/%Y') %></p></div></header>
+<section class="section" style="padding-top:40px">
+  <div class="wrap prose">
+    <h2>Éditeur du site</h2>
+    <p>Le site <strong>edenpark-arcachon.fr</strong> est édité par :</p>
+    <p><strong><%= h(l['company']) %></strong>, <%= h(l['form']) %> au capital de <span class="<%= 'todo' if l['capital'].include?('PROVISOIRE') %>"><%= h(l['capital']) %></span><br>
+      Nom commercial : Eden Park Arcachon<br>
+      Siège social : <%= h(SITE['address']['street']) %>, <%= SITE['address']['postal_code'] %> <%= h(SITE['address']['city']) %>, France<br>
+      <%= h(l['rcs']) %> – SIRET <%= h(l['siret']) %><br>
+      N° TVA intracommunautaire : <%= h(l['vat']) %><br>
+      Code NAF : <%= h(l['naf']) %><br>
+      Téléphone : <a href="tel:<%= SITE['phone_intl'] %>"><%= h(SITE['phone']) %></a> – E-mail : <a href="mailto:<%= h(SITE['email']) %>"><%= h(SITE['email']) %></a></p>
+    <p>Directeur de la publication : <%= h(l['director']) %>, <%= h(l['director_title'].downcase) %>.</p>
+    <p>Eden Park Arcachon est une boutique exploitée sous l'enseigne Eden Park. Eden Park® et le logo au nœud papillon sont des marques déposées de leur propriétaire, utilisées avec son autorisation.</p>
+
+    <h2>Hébergement</h2>
+    <p><%= h(l['host']) %></p>
+
+    <h2>Propriété intellectuelle</h2>
+    <p>L'ensemble des contenus de ce site (textes, photographies, visuels, broderies, logos, mise en page) est protégé par le droit de la propriété intellectuelle. Toute reproduction, représentation ou diffusion, totale ou partielle, sans l'autorisation écrite préalable de l'éditeur ou des titulaires de droits est interdite.</p>
+
+    <h2>Données personnelles et cookies</h2>
+    <p>Les données personnelles collectées sur ce site sont traitées conformément au Règlement général sur la protection des données (RGPD) et à la loi Informatique et Libertés. Pour en savoir plus, consultez notre <a href="/confidentialite/">politique de confidentialité</a> et notre <a href="/cookies/">politique de cookies</a>.</p>
+
+    <h2>Médiation de la consommation</h2>
+    <p>Conformément aux articles L611-1 et suivants du Code de la consommation, en cas de litige non résolu avec notre service client, vous pouvez recourir gratuitement au médiateur de la consommation suivant : <span class="<%= 'todo' if l['mediator'].include?('PROVISOIRE') %>"><%= h(l['mediator']) %></span>. Vous pouvez également utiliser la plateforme européenne de règlement en ligne des litiges : <a href="https://ec.europa.eu/consumers/odr" rel="noopener" target="_blank">ec.europa.eu/consumers/odr</a>.</p>
+
+    <h2>Crédits</h2>
+    <p>Photographies : Eden Park Arcachon. Conception du site : Eden Park Arcachon.</p>
+  </div>
+</section>

@@ -1,0 +1,52 @@
+<% s = SITE['shipping'] -%>
+<header class="page-head page-head--sand">
+  <div class="wrap">
+    <p class="eyebrow">Commander sereinement</p>
+    <h1>Livraison et retours</h1>
+    <p class="lead">Livraison Colissimo en France métropolitaine et DOM-TOM, retrait gratuit en boutique à Arcachon, retours et échanges sous <%= SITE['return_days'] %> jours.</p>
+  </div>
+</header>
+
+<section class="section" style="padding-top:40px">
+  <div class="wrap">
+    <div class="info-grid">
+      <div class="info-card"><%= icon('truck') %><h3>France métropolitaine</h3><p><%= euro(s['metro_price']) %> · <strong>offerte dès <%= euro(s['free_threshold']) %></strong><br>Colissimo, <%= s['metro_delay'] %></p></div>
+      <div class="info-card"><%= icon('truck') %><h3>DOM-TOM</h3><p><%= euro(s['domtom_price']) %><br>Colissimo, <%= s['domtom_delay'] %></p></div>
+      <div class="info-card"><%= icon('store') %><h3>Retrait en boutique</h3><p><strong>Gratuit</strong><br>296 bd de la Plage, Arcachon – dès que nous vous prévenons que votre commande est prête</p></div>
+    </div>
+
+    <div class="prose">
+      <h2 id="livraison">Délais et zones de livraison</h2>
+      <p>Nous livrons en <strong>France métropolitaine</strong> (Corse comprise) et dans les <strong>départements et territoires d'outre-mer</strong> : Guadeloupe, Martinique, Guyane, La Réunion, Mayotte, Saint-Pierre-et-Miquelon, Saint-Barthélemy, Saint-Martin, Wallis-et-Futuna, Polynésie française et Nouvelle-Calédonie.</p>
+      <p>Les commandes sont préparées dans notre boutique d'Arcachon sous 1 à 2 jours ouvrés, puis confiées à Colissimo. Comptez ensuite <%= s['metro_delay'] %> en France métropolitaine et <%= s['domtom_delay'] %> pour les DOM-TOM. Pour les envois en DOM-TOM, des droits et taxes locales (octroi de mer) peuvent être demandés à la livraison.</p>
+      <p>Dès l'expédition, vous recevez un e-mail avec votre numéro de suivi Colissimo.</p>
+
+      <h2 id="tarifs">Tarifs de livraison</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Destination</th><th>Tarif</th><th>Délai indicatif</th></tr></thead>
+        <tbody>
+          <tr><td>France métropolitaine</td><td><%= euro(s['metro_price']) %> – offerte dès <%= euro(s['free_threshold']) %></td><td><%= s['metro_delay'] %></td></tr>
+          <tr><td>DOM-TOM</td><td><%= euro(s['domtom_price']) %></td><td><%= s['domtom_delay'] %></td></tr>
+          <tr><td>Retrait en boutique (Arcachon)</td><td>Gratuit</td><td>Sous 24 à 48 h</td></tr>
+        </tbody>
+      </table></div>
+
+      <h2 id="retrait">Retrait gratuit en boutique</h2>
+      <p>Au moment de valider votre panier, choisissez « Retrait en boutique ». Nous vous prévenons par e-mail ou par téléphone dès que votre commande est prête. Vous pourrez la récupérer aux horaires d'ouverture, sur présentation de votre e-mail de confirmation, au 296 boulevard de la Plage, 33120 Arcachon.</p>
+
+      <h2 id="retours">Retours et échanges</h2>
+      <p>Vous disposez de <strong><%= SITE['return_days'] %> jours</strong> à compter de la réception de votre commande pour nous retourner un article qui ne vous convient pas. L'article doit être non porté, non lavé, dans son état d'origine avec ses étiquettes.</p>
+      <ul>
+        <li><strong>En boutique :</strong> rapportez simplement l'article au 296 boulevard de la Plage, à Arcachon, pour un échange ou un remboursement.</li>
+        <li><strong>Par voie postale :</strong> contactez-nous via le <a href="/contact/">formulaire de contact</a> en indiquant votre numéro de commande. Nous vous communiquerons l'adresse et la procédure de retour. Les frais de retour sont à votre charge, sauf article défectueux ou erreur de notre part.</li>
+      </ul>
+      <p>Les articles personnalisés à votre demande (broderie sur mesure) ne peuvent être ni repris ni échangés, conformément à l'article L221-28 du Code de la consommation.</p>
+
+      <h2 id="remboursement">Modalités de remboursement</h2>
+      <p>Après réception et contrôle de l'article retourné, nous procédons au remboursement sous 14 jours maximum, sur le moyen de paiement utilisé lors de la commande. Les frais de livraison initiaux sont remboursés en cas de retour de la totalité de la commande (sur la base du tarif de livraison standard).</p>
+      <p>Pour un échange de taille ou de coloris, le plus simple est de passer en boutique, ou de nous retourner l'article et de repasser commande.</p>
+
+      <p style="margin-top:40px"><a class="btn" href="/contact/">Une question ? Contactez-nous</a></p>
+    </div>
+  </div>
+</section>

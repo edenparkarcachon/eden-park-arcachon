@@ -1,0 +1,111 @@
+<%
+  all_sizes  = %w[XS S M L XL 2XL 3XL 4XL 5XL Taille\ unique].select { |s| items.any? { |p| p['sizes'].include?(s) } }
+  all_colors = items.flat_map { |p| p['colors'] }.uniq { |c| c['name'] }
+  all_fits   = items.map { |p| p['fit'] }.uniq
+  max_price  = ((items.map { |p| p['price'] }.max || 0) / 100.0).ceil
+-%>
+<header class="page-head">
+  <div class="wrap">
+<% if category -%>
+    <p class="eyebrow">Collection Bassin d'Arcachon</p>
+    <h1><%= h(category['title']) %></h1>
+    <p class="cat-intro"><%= h(category['intro']) %></p>
+<% else -%>
+    <p class="eyebrow">Boutique en ligne</p>
+    <h1>La collection Eden Park Arcachon</h1>
+    <p class="cat-intro">Toutes nos pièces exclusives brodées aux emblèmes du Bassin d'Arcachon : polos, t-shirts, sweats et casquettes. Paiement sécurisé, livraison en France et DOM-TOM, ou retrait gratuit dans notre boutique du boulevard de la Plage.</p>
+<% end -%>
+  </div>
+</header>
+
+<div class="wrap shop" data-shop>
+  <aside aria-label="Filtres">
+    <form class="filters" id="filters" data-filters>
+<% unless category -%>
+      <fieldset class="filter">
+        <legend>Catégorie</legend>
+<% shop_cats.each do |c| n = PRODUCTS.count { |p| p['category'] == c['slug'] } -%>
+        <label class="check"><input type="checkbox" name="cat" value="<%= c['slug'] %>"> <span><%= h(c['name']) %> (<%= n %>)</span></label>
+<% end -%>
+      </fieldset>
+<% else -%>
+      <div class="filter">
+        <p class="filter__title">Catégories</p>
+<% shop_cats.each do |c| -%>
+        <div class="check"><a href="<%= category_url(c) %>"<%= c['slug'] == category['slug'] ? ' aria-current="page" style="font-weight:500"' : '' %>><%= h(c['name']) %></a></div>
+<% end -%>
+      </div>
+<% end -%>
+      <fieldset class="filter">
+        <legend>Taille</legend>
+        <div class="chips">
+<% all_sizes.each do |s| -%>
+          <label class="chip"><input type="checkbox" name="size" value="<%= h(s) %>"><span><%= h(s) %></span></label>
+<% end -%>
+        </div>
+      </fieldset>
+      <fieldset class="filter">
+        <legend>Couleur</legend>
+<% all_colors.each do |c| -%>
+        <label class="check"><input type="checkbox" name="color" value="<%= h(c['name']) %>"> <span class="swatch-dot" style="background:<%= c['hex'] %>"><% if c['accent'] && c['accent'] != c['hex'] %><i style="background:<%= c['accent'] %>"></i><% end %></span> <span><%= h(c['name']) %></span></label>
+<% end -%>
+      </fieldset>
+<% if all_fits.size > 1 || (category && category['slug'] == 'polos') -%>
+      <fieldset class="filter">
+        <legend>Coupe</legend>
+<% all_fits.each do |f| -%>
+        <label class="check"><input type="checkbox" name="fit" value="<%= h(f) %>"> <span><%= h(f) %></span></label>
+<% end -%>
+      </fieldset>
+<% end -%>
+      <fieldset class="filter">
+        <legend>Prix (€)</legend>
+        <div class="range">
+          <label class="sr-only" for="pmin">Prix minimum</label>
+          <input id="pmin" type="number" name="min" min="0" max="<%= max_price %>" placeholder="0" inputmode="numeric">
+          <span>–</span>
+          <label class="sr-only" for="pmax">Prix maximum</label>
+          <input id="pmax" type="number" name="max" min="0" max="<%= max_price %>" placeholder="<%= max_price %>" inputmode="numeric">
+        </div>
+      </fieldset>
+      <p style="margin-top:16px"><button class="link-btn" type="reset">Réinitialiser les filtres</button></p>
+    </form>
+  </aside>
+
+  <section aria-label="Produits">
+    <div class="toolbar">
+      <button class="btn btn--ghost filters-toggle" type="button" aria-controls="filters" aria-expanded="false" data-filters-toggle style="min-height:42px;padding:0 16px"><%= icon('filter') %> Filtrer</button>
+      <span data-count aria-live="polite"><%= items.size %> produit<%= items.size > 1 ? 's' : '' %></span>
+      <label>
+        <span class="sr-only">Trier par</span>
+        <select data-sort>
+          <option value="pop">Meilleures ventes</option>
+          <option value="new">Nouveautés</option>
+          <option value="asc">Prix croissant</option>
+          <option value="desc">Prix décroissant</option>
+        </select>
+      </label>
+    </div>
+    <div class="grid grid--3" data-grid>
+<% items.each do |p| -%>
+      <%= product_card(p, heading: 'h2') %>
+<% end -%>
+    </div>
+    <div class="empty-state" data-empty hidden>
+      <p>Aucun produit ne correspond à ces critères.</p>
+      <button class="btn btn--ghost" type="button" data-reset>Réinitialiser les filtres</button>
+    </div>
+    <nav class="pager" data-pager aria-label="Pagination"></nav>
+  </section>
+</div>
+
+<% if category -%>
+<section class="section section--sand">
+  <div class="wrap wrap--narrow center">
+    <div class="bow-sep"><%= bow(cls: '') %></div>
+    <h2>Une question sur nos <%= h(category['name'].downcase) %> ?</h2>
+    <p class="lead">Taille, broderie, disponibilité : l'équipe de la boutique d'Arcachon vous répond au <a href="tel:<%= SITE['phone_intl'] %>"><%= h(SITE['phone']) %></a> ou par le formulaire de contact.</p>
+    <p><a class="btn btn--ghost" href="/faq/#guide-des-tailles">Guide des tailles</a> &nbsp; <a class="btn" href="/contact/">Nous contacter</a></p>
+  </div>
+</section>
+<% end -%>

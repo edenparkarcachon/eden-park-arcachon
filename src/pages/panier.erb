@@ -1,0 +1,34 @@
+<% s = SITE['shipping'] -%>
+<header class="page-head">
+  <div class="wrap"><h1>Mon panier</h1></div>
+</header>
+
+<div class="wrap cart" data-cart-page>
+  <section aria-label="Articles du panier">
+    <div data-cart-lines><p class="mini-empty">Chargement du panier…</p></div>
+    <p style="margin-top:24px"><a class="link-arrow" href="/boutique/"><%= icon('arrow').sub('<svg', '<svg style="transform:rotate(180deg)"') %> Continuer mes achats</a></p>
+  </section>
+
+  <aside class="summary" aria-labelledby="h-summary" data-summary>
+    <h2 id="h-summary">Récapitulatif</h2>
+    <div class="free-ship" data-free-ship></div>
+    <fieldset style="border:0;padding:0;margin:0">
+      <legend class="opt__label" style="margin-top:8px">Mode de livraison</legend>
+      <div class="ship-opts">
+        <label class="ship-opt"><input type="radio" name="zone" value="metro" checked><span>Colissimo – France métropolitaine<small><%= s['metro_delay'] %> · offerte dès <%= euro(s['free_threshold']) %></small></span><strong data-ship-price="metro"><%= euro(s['metro_price']) %></strong></label>
+        <label class="ship-opt"><input type="radio" name="zone" value="domtom"><span>Colissimo – DOM-TOM<small><%= s['domtom_delay'] %></small></span><strong><%= euro(s['domtom_price']) %></strong></label>
+        <label class="ship-opt"><input type="radio" name="zone" value="retrait"><span>Retrait en boutique<small>296 bd de la Plage, Arcachon</small></span><strong>Gratuit</strong></label>
+      </div>
+    </fieldset>
+    <div data-backorder-note></div>
+    <div class="summary__row"><span>Sous-total</span><span data-subtotal>0 €</span></div>
+    <div class="summary__row"><span>Livraison</span><span data-shipping>–</span></div>
+    <div class="summary__row summary__total"><span>Total TTC</span><span data-total>0 €</span></div>
+    <label class="consent" for="cgv-ok"><input type="checkbox" id="cgv-ok" data-cgv> <span>J'ai lu et j'accepte les <a href="/cgv/" target="_blank">conditions générales de vente</a>.</span></label>
+    <p class="opt__error" data-cgv-error hidden>Merci d'accepter les conditions générales de vente.</p>
+    <button class="btn btn--block" type="button" data-checkout><%= icon('lock').sub('<svg', '<svg style="width:18px"') %> Commander</button>
+    <div data-checkout-msg></div>
+    <div class="pay-logos" aria-label="Moyens de paiement acceptés"><span>CB</span><span>VISA</span><span>MASTERCARD</span><span>AMEX</span><span>APPLE PAY</span><span>GOOGLE PAY</span></div>
+    <p style="font-size:.8rem;color:var(--muted);text-align:center;margin-top:12px">Paiement sécurisé par Stripe. Aucun compte à créer.</p>
+  </aside>
+</div>

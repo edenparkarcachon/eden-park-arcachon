@@ -1,0 +1,18 @@
+<section class="error-page">
+  <div class="wrap wrap--narrow">
+    <p class="big">404</p>
+    <h1>Cette page a pris le large</h1>
+    <p class="lead" style="margin:0 auto 30px">La page que vous cherchez n'existe pas ou plus. Mais la collection Bassin d'Arcachon, elle, vous attend.</p>
+    <p><a class="btn" href="/">Retour à l'accueil</a> &nbsp; <a class="btn btn--ghost" href="/boutique/">Voir la boutique</a></p>
+  </div>
+</section>
+<section class="section section--sand">
+  <div class="wrap">
+    <h2 class="center">Nos pièces signature</h2>
+    <div class="grid" style="margin-top:30px">
+<% featured.each do |p| -%>
+      <%= product_card(p) %>
+<% end -%>
+    </div>
+  </div>
+</section>

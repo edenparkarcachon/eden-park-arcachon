@@ -1,0 +1,51 @@
+<header class="page-head page-head--sand">
+  <div class="wrap">
+    <p class="eyebrow">Nous écrire</p>
+    <h1>Contact</h1>
+    <p class="lead">Une question sur une commande, une taille ou un produit ? L'équipe de la boutique Eden Park d'Arcachon vous répond sous 48 h ouvrées.</p>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap two-col">
+    <div>
+      <form class="form" <%= netlify_form_attrs('contact') %>>
+        <%= form_hidden('contact') %>
+        <div class="form__row">
+          <div class="field"><label for="ct-nom">Nom et prénom *</label><input id="ct-nom" name="nom" autocomplete="name" required></div>
+          <div class="field"><label for="ct-email">E-mail *</label><input id="ct-email" type="email" name="email" autocomplete="email" required></div>
+        </div>
+        <div class="form__row">
+          <div class="field"><label for="ct-tel">Téléphone</label><input id="ct-tel" type="tel" name="telephone" autocomplete="tel"></div>
+          <div class="field">
+            <label for="ct-sujet">Sujet *</label>
+            <select id="ct-sujet" name="sujet" required>
+              <option value="">Choisir…</option>
+              <option>Question sur un produit</option>
+              <option>Suivi de commande</option>
+              <option>Retour / échange</option>
+              <option>Personnalisation</option>
+              <option>Autre demande</option>
+            </select>
+          </div>
+        </div>
+        <div class="field"><label for="ct-cmd">N° de commande (le cas échéant)</label><input id="ct-cmd" name="numero-commande"></div>
+        <div class="field"><label for="ct-msg">Message *</label><textarea id="ct-msg" name="message" required></textarea></div>
+        <%= rgpd_checkbox('ct-rgpd') %>
+        <button class="btn" type="submit">Envoyer le message</button>
+      </form>
+    </div>
+    <div>
+      <ul class="contact-list">
+        <li><%= icon('pin') %><span><strong>Boutique Eden Park Arcachon</strong><br><%= address_html %></span></li>
+        <li><%= icon('phone') %><span><strong>Téléphone</strong><br><a href="tel:<%= SITE['phone_intl'] %>"><%= h(SITE['phone']) %></a></span></li>
+        <li><%= icon('mail') %><span><strong>E-mail</strong><br><a href="mailto:<%= h(SITE['email']) %>"><%= h(SITE['email']) %></a></span></li>
+        <li><%= icon('instagram') %><span><strong>Instagram</strong><br><a href="<%= h(SITE['social']['instagram']) %>" target="_blank" rel="noopener">@edenpark_arcachon</a></span></li>
+      </ul>
+      <h2 style="font-size:1.2rem">Horaires</h2>
+      <%= hours_list('hours hours--light') %>
+      <iframe class="map" title="Localisation de la boutique Eden Park Arcachon" loading="lazy" referrerpolicy="no-referrer"
+        src="<%= osm_embed %>"></iframe>
+    </div>
+  </div>
+</section>

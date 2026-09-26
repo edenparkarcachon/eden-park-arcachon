@@ -1,0 +1,241 @@
+{
+  "_note": "Catalogue. Prix en centimes TTC. Le champ 'provisional' liste ce qui reste à confirmer (non affiché aux clients). Les images 'placeholder' sont des illustrations provisoires générées automatiquement : remplacez-les par de vraies photos (déposez le fichier dans src/assets/img/produits/ et indiquez son nom dans 'src').",
+  "categories": [
+    {
+      "slug": "polos",
+      "name": "Polos",
+      "title": "Polos brodés Bassin d'Arcachon",
+      "meta_title": "Polos Eden Park Bassin d'Arcachon – Collection exclusive",
+      "meta_description": "Polos Eden Park brodés Dune du Pyla et queue de baleine de la jetée Thiers. Collection exclusive de la boutique Eden Park d'Arcachon.",
+      "intro": "Le polo, c'est la pièce emblématique d'Eden Park depuis 1987. À Arcachon, nous l'avons brodé aux couleurs de notre Bassin : la silhouette de la Dune du Pyla, la queue de baleine de la jetée Thiers… Des modèles exclusifs, pensés et personnalisés dans notre boutique du boulevard de la Plage.",
+      "image": "produits/polo-dune-du-pyla-marine-porte.jpg"
+    },
+    {
+      "slug": "t-shirts",
+      "name": "T-shirts",
+      "title": "T-shirts Bassin d'Arcachon",
+      "meta_title": "T-shirts Eden Park Arcachon – Brodés Bassin d'Arcachon",
+      "meta_description": "T-shirts Eden Park en coton brodés Bassin d'Arcachon, exclusivité de la boutique d'Arcachon. Livraison en France et retrait en boutique.",
+      "intro": "Des t-shirts en coton, simples et bien coupés, signés d'une broderie inspirée du Bassin. Parfaits pour une journée à la plage d'Arcachon, un apéritif au Moulleau ou un retour de bateau au Cap Ferret.",
+      "image": null
+    },
+    {
+      "slug": "sweats",
+      "name": "Sweats",
+      "title": "Sweats & pulls Bassin d'Arcachon",
+      "meta_title": "Sweats Eden Park Arcachon – Collection Bassin d'Arcachon",
+      "meta_description": "Sweats Eden Park brodés Bassin d'Arcachon, idéals pour la mi-saison sur le Bassin. Collection exclusive de la boutique Eden Park d'Arcachon.",
+      "intro": "Quand le vent se lève sur le Bassin, on enfile un sweat Eden Park. Molleton de coton, coupe droite et broderie exclusive Bassin d'Arcachon : l'essentiel de la mi-saison.",
+      "image": null
+    },
+    {
+      "slug": "casquettes-accessoires",
+      "name": "Casquettes & accessoires",
+      "title": "Casquettes & accessoires Bassin d'Arcachon",
+      "meta_title": "Casquettes Eden Park Bassin d'Arcachon – Accessoires",
+      "meta_description": "Casquettes Eden Park à écusson Bassin d'Arcachon et accessoires exclusifs de la boutique Eden Park d'Arcachon. Livraison France & DOM-TOM.",
+      "intro": "La touche finale d'une silhouette réussie : notre casquette marine à écusson brodé Bassin d'Arcachon, et les accessoires signés de la boutique.",
+      "image": "produits/casquette-bassin-arcachon-ecusson-rose.jpg"
+    }
+  ],
+  "products": [
+    {
+      "slug": "polo-dune-du-pyla",
+      "name": "Polo « Dune du Pyla »",
+      "category": "polos",
+      "price": 11900,
+      "colors": [{ "name": "Marine", "hex": "#16213d" }],
+      "sizes": ["XS", "S", "M", "L", "XL", "2XL", "3XL"],
+      "fit": "Coupe droite",
+      "badges": ["Nouveau"],
+      "featured": true,
+      "popularity": 100,
+      "date": "2026-08-13",
+      "short": "Polo marine brodé de la silhouette de la Dune du Pyla, signé au dos « L'élégance au cœur du Bassin ».",
+      "description": [
+        "La collection Bassin d'Arcachon s'agrandit avec le modèle « Dune du Pyla », inspiré de l'un des emblèmes de notre Bassin.",
+        "Sur la poitrine, la silhouette de la plus haute dune d'Europe est brodée en fil rose et blanc, accompagnée de l'inscription « Bassin d'Arcachon ». Au dos, sous le col, une broderie vient signer la pièce : « L'élégance au cœur du Bassin ».",
+        "Un polo exclusif, pensé par la boutique Eden Park d'Arcachon, entre élégance French Flair et esprit du Bassin."
+      ],
+      "details": [
+        "Broderie poitrine : silhouette de la Dune du Pyla + « Bassin d'Arcachon »",
+        "Broderie dos : « L'élégance au cœur du Bassin »",
+        "Maille piqué de coton",
+        "Col polo, patte de boutonnage 2 boutons",
+        "Coupe droite",
+        "Modèle exclusif boutique Eden Park Arcachon"
+      ],
+      "care": "Lavage en machine à 30 °C, sur l'envers. Ne pas utiliser de sèche-linge. Repassage doux sur l'envers en évitant la broderie.",
+      "images": [
+        { "src": "produits/polo-dune-du-pyla-bassin-arcachon-broderie.jpg", "alt": "Broderie Dune du Pyla et inscription Bassin d'Arcachon sur le polo marine Eden Park" },
+        { "src": "produits/polo-dune-du-pyla-marine-porte.jpg", "alt": "Polo Eden Park Dune du Pyla marine porté face au Bassin d'Arcachon" },
+        { "src": "produits/polo-dune-du-pyla-dos-elegance-au-coeur-du-bassin.jpg", "alt": "Dos du polo Dune du Pyla brodé « L'élégance au cœur du Bassin »" },
+        { "src": "produits/casquette-bassin-arcachon-ecusson-rose.jpg", "alt": "Polo Dune du Pyla porté avec la casquette Bassin d'Arcachon" }
+      ],
+      "provisional": ["prix", "composition exacte", "tailles disponibles", "conseils d'entretien"]
+    },
+    {
+      "slug": "polo-queue-de-baleine",
+      "name": "Polo « Queue de baleine »",
+      "category": "polos",
+      "price": 11900,
+      "colors": [{ "name": "Marine", "hex": "#16213d" }],
+      "sizes": ["XS", "S", "M", "L", "XL", "2XL", "3XL"],
+      "fit": "Coupe droite",
+      "badges": ["Exclusif"],
+      "featured": true,
+      "popularity": 90,
+      "date": "2026-06-12",
+      "short": "Polo marine brodé de la célèbre queue de baleine de la jetée Thiers.",
+      "description": [
+        "Quand l'esprit du Bassin rencontre l'élégance Eden Park.",
+        "Pour cette personnalisation exclusive, notre boutique d'Arcachon a choisi de reprendre la célèbre silhouette de la queue de baleine située à proximité de la jetée Thiers. Un détail emblématique qui fait écho à l'identité de notre cher Bassin.",
+        "Un polo à porter en ville d'Hiver comme sur le front de mer, signé Eden Park Arcachon."
+      ],
+      "details": [
+        "Broderie poitrine : queue de baleine de la jetée Thiers",
+        "Maille piqué de coton",
+        "Col polo, patte de boutonnage 2 boutons",
+        "Coupe droite",
+        "Modèle exclusif boutique Eden Park Arcachon"
+      ],
+      "care": "Lavage en machine à 30 °C, sur l'envers. Ne pas utiliser de sèche-linge. Repassage doux sur l'envers en évitant la broderie.",
+      "images": [
+        { "src": "produits/polo-queue-de-baleine-jetee-thiers.jpg", "alt": "Polo Eden Park brodé queue de baleine porté sur la jetée Thiers à Arcachon" }
+      ],
+      "provisional": ["prix", "composition exacte", "tailles disponibles", "photos produit supplémentaires"]
+    },
+    {
+      "slug": "casquette-bassin-arcachon",
+      "name": "Casquette « Bassin d'Arcachon »",
+      "category": "casquettes-accessoires",
+      "price": 4500,
+      "colors": [
+        { "name": "Marine · écusson rose", "hex": "#16213d", "accent": "#f3b9cb" },
+        { "name": "Marine · écusson marine", "hex": "#16213d", "accent": "#16213d" }
+      ],
+      "sizes": ["Taille unique"],
+      "fit": "Réglable",
+      "badges": [],
+      "featured": true,
+      "popularity": 80,
+      "date": "2026-08-13",
+      "short": "Casquette marine à écusson rond brodé Bassin d'Arcachon et pin des Landes.",
+      "description": [
+        "L'accessoire signature de la collection Bassin d'Arcachon : une casquette marine six panneaux, ornée d'un écusson rond brodé d'un pin et de l'inscription « Bassin d'Arcachon ».",
+        "Disponible avec écusson rose, clin d'œil au nœud papillon Eden Park, ou avec écusson marine pour une allure plus sobre. Elle accompagne parfaitement nos polos « Dune du Pyla » et « Queue de baleine »."
+      ],
+      "details": [
+        "Écusson rond brodé : pin & « Bassin d'Arcachon »",
+        "Six panneaux, visière incurvée",
+        "Patte de serrage réglable à l'arrière",
+        "Taille unique"
+      ],
+      "care": "Nettoyage à la main à l'eau froide. Ne pas passer en machine. Sécher à plat.",
+      "images": [
+        { "src": "produits/casquette-bassin-arcachon-ecusson-rose.jpg", "alt": "Casquette Eden Park marine à écusson rose Bassin d'Arcachon", "variant": "Marine · écusson rose" },
+        { "src": "produits/polo-dune-du-pyla-dos-elegance-au-coeur-du-bassin.jpg", "alt": "Casquette Eden Park marine à écusson marine Bassin d'Arcachon, vue de dos", "variant": "Marine · écusson marine" }
+      ],
+      "provisional": ["prix", "composition", "photos produit sur fond neutre"]
+    },
+    {
+      "slug": "t-shirt-bassin-arcachon",
+      "name": "T-shirt « Bassin d'Arcachon »",
+      "category": "t-shirts",
+      "price": 6900,
+      "colors": [
+        { "name": "Blanc", "hex": "#ffffff" },
+        { "name": "Marine", "hex": "#16213d" }
+      ],
+      "sizes": ["XS", "S", "M", "L", "XL", "2XL", "3XL"],
+      "fit": "Coupe droite",
+      "badges": [],
+      "featured": false,
+      "popularity": 70,
+      "date": "2026-07-01",
+      "short": "T-shirt en jersey de coton brodé de la silhouette de la Dune du Pyla.",
+      "description": [
+        "Le t-shirt essentiel de l'été sur le Bassin : jersey de coton doux, col rond et broderie « Bassin d'Arcachon » surmontée de la silhouette de la Dune du Pyla.",
+        "Il se porte seul les jours de soleil, ou sous une chemise quand la brise se lève en fin de journée."
+      ],
+      "details": [
+        "Broderie poitrine : Dune du Pyla + « Bassin d'Arcachon »",
+        "Jersey de coton",
+        "Col rond, manches courtes",
+        "Coupe droite"
+      ],
+      "care": "Lavage en machine à 30 °C, sur l'envers. Ne pas utiliser de sèche-linge.",
+      "images": [
+        { "placeholder": "tshirt", "color": "#ffffff", "alt": "T-shirt Eden Park blanc brodé Bassin d'Arcachon (visuel provisoire)" },
+        { "placeholder": "tshirt", "color": "#16213d", "alt": "T-shirt Eden Park marine brodé Bassin d'Arcachon (visuel provisoire)" }
+      ],
+      "provisional": ["produit à confirmer", "prix", "coloris", "photos", "composition"]
+    },
+    {
+      "slug": "t-shirt-queue-de-baleine",
+      "name": "T-shirt « Queue de baleine »",
+      "category": "t-shirts",
+      "price": 6900,
+      "colors": [
+        { "name": "Rose", "hex": "#f3c3d2" },
+        { "name": "Blanc", "hex": "#ffffff" }
+      ],
+      "sizes": ["XS", "S", "M", "L", "XL", "2XL", "3XL"],
+      "fit": "Coupe droite",
+      "badges": [],
+      "featured": false,
+      "popularity": 60,
+      "date": "2026-06-20",
+      "short": "T-shirt en coton brodé de la queue de baleine de la jetée Thiers.",
+      "description": [
+        "La queue de baleine de la jetée Thiers, symbole d'Arcachon, brodée sur un t-shirt en jersey de coton.",
+        "Un modèle léger et coloré, dans le rose signature Eden Park, pour les beaux jours sur le Bassin."
+      ],
+      "details": [
+        "Broderie poitrine : queue de baleine",
+        "Jersey de coton",
+        "Col rond, manches courtes",
+        "Coupe droite"
+      ],
+      "care": "Lavage en machine à 30 °C, sur l'envers. Ne pas utiliser de sèche-linge.",
+      "images": [
+        { "placeholder": "tshirt", "color": "#f3c3d2", "mark": "whale", "alt": "T-shirt Eden Park rose brodé queue de baleine (visuel provisoire)" },
+        { "placeholder": "tshirt", "color": "#ffffff", "mark": "whale", "alt": "T-shirt Eden Park blanc brodé queue de baleine (visuel provisoire)" }
+      ],
+      "provisional": ["produit à confirmer", "prix", "coloris", "photos", "composition"]
+    },
+    {
+      "slug": "sweat-bassin-arcachon",
+      "name": "Sweat « Bassin d'Arcachon »",
+      "category": "sweats",
+      "price": 13500,
+      "colors": [
+        { "name": "Marine", "hex": "#16213d" },
+        { "name": "Écru", "hex": "#efe8da" }
+      ],
+      "sizes": ["XS", "S", "M", "L", "XL", "2XL", "3XL"],
+      "fit": "Coupe droite",
+      "badges": ["Mi-saison"],
+      "featured": true,
+      "popularity": 75,
+      "date": "2026-09-03",
+      "short": "Sweat col rond en molleton de coton, brodé Dune du Pyla & Bassin d'Arcachon.",
+      "description": [
+        "Pour les soirées fraîches sur le front de mer ou les matins de marché, le sweat « Bassin d'Arcachon » est l'allié de la mi-saison.",
+        "Molleton de coton gratté, col rond côtelé et broderie exclusive de la silhouette de la Dune du Pyla : l'élégance Eden Park, version Bassin."
+      ],
+      "details": [
+        "Broderie poitrine : Dune du Pyla + « Bassin d'Arcachon »",
+        "Molleton de coton gratté",
+        "Col rond, poignets et bas côtelés",
+        "Coupe droite"
+      ],
+      "care": "Lavage en machine à 30 °C, sur l'envers. Séchage à plat.",
+      "images": [
+        { "placeholder": "sweat", "color": "#16213d", "alt": "Sweat Eden Park marine brodé Bassin d'Arcachon (visuel provisoire)" },
+        { "placeholder": "sweat", "color": "#efe8da", "alt": "Sweat Eden Park écru brodé Bassin d'Arcachon (visuel provisoire)" }
+      ],
+      "provisional": ["produit à confirmer", "prix", "coloris", "photos", "composition"]
+    }
+  ]
+}

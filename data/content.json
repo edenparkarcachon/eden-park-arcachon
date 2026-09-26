@@ -1,0 +1,118 @@
+{
+  "_note": "Textes et photos des pages, modifiables depuis l'espace admin (onglet Pages & photos). Les photos sont des chemins relatifs à src/assets/img/.",
+  "announcement": [
+    "Livraison offerte dès 120 € en France métropolitaine",
+    "Retrait gratuit en boutique à Arcachon",
+    "Retours sous 30 jours"
+  ],
+  "footer_text": "La boutique Eden Park du boulevard de la Plage. Des pièces exclusives brodées aux emblèmes du Bassin d'Arcachon, avec l'élégance French Flair.",
+  "home": {
+    "hero": {
+      "eyebrow": "Collection exclusive · Boutique d'Arcachon",
+      "title": "Eden Park Arcachon",
+      "accent": "l'élégance au cœur du Bassin",
+      "text": "Polos, t-shirts, sweats et casquettes brodés aux emblèmes du Bassin d'Arcachon : la Dune du Pyla, la queue de baleine de la jetée Thiers… Imaginés dans notre boutique du boulevard de la Plage, livrés partout en France.",
+      "image": { "src": "produits/casquette-bassin-arcachon-ecusson-rose.jpg", "alt": "Polo Dune du Pyla et casquette Bassin d'Arcachon Eden Park portés face au Bassin" },
+      "cta1_label": "Découvrir la collection",
+      "cta1_link": "/boutique/",
+      "cta2_label": "Nos polos Bassin",
+      "cta2_link": "/boutique/polos/"
+    },
+    "universes": { "eyebrow": "La boutique en ligne", "title": "Nos univers" },
+    "featured": { "eyebrow": "Pièces signature", "title": "La collection Bassin d'Arcachon" },
+    "story": {
+      "eyebrow": "Pensé à Arcachon",
+      "title": "Le French Flair, version Bassin",
+      "lead": "Depuis 1987, Eden Park habille l'élégance décontractée, héritée du rugby et de son célèbre nœud papillon rose. À Arcachon, nous avons voulu y ajouter ce qui fait battre notre cœur : le Bassin.",
+      "text": "Chaque modèle de notre collection reprend un emblème de chez nous, brodé avec soin : la silhouette de la Dune du Pyla, la queue de baleine près de la jetée Thiers, le pin parasol des Landes… Des pièces que vous ne trouverez nulle part ailleurs, à porter ici comme à Paris.",
+      "tag": "L'élégance au cœur du Bassin",
+      "button_label": "Découvrir le lookbook",
+      "image": { "src": "produits/polo-dune-du-pyla-dos-elegance-au-coeur-du-bassin.jpg", "alt": "Broderie « L'élégance au cœur du Bassin » au dos du polo Eden Park Dune du Pyla" }
+    },
+    "emblems": [
+      { "icon": "dune", "title": "La Dune du Pyla", "text": "La plus haute dune d'Europe, brodée en fil rose et blanc sur notre polo marine, signé au dos." },
+      { "icon": "whale", "title": "La queue de baleine", "text": "La célèbre sculpture près de la jetée Thiers, devenue notre personnalisation exclusive." },
+      { "icon": "pine", "title": "Le pin du Bassin", "text": "Brodé sur l'écusson de notre casquette, clin d'œil à la forêt qui borde le Bassin." }
+    ],
+    "perso": {
+      "eyebrow": "Sur demande",
+      "title": "Votre broderie, votre histoire",
+      "lead": "Entreprise du Bassin, club, association, mariage ou événement : la boutique d'Arcachon imagine avec vous une personnalisation Eden Park à votre image.",
+      "points": [
+        "Accompagnement en boutique, du dessin au choix des fils",
+        "Polos, sweats, t-shirts et casquettes Eden Park",
+        "Petites et moyennes séries"
+      ],
+      "button_label": "Demander un devis",
+      "image": { "src": "produits/polo-dune-du-pyla-bassin-arcachon-broderie.jpg", "alt": "Broderie personnalisée Dune du Pyla réalisée par Eden Park Arcachon" }
+    },
+    "store": {
+      "eyebrow": "Venez nous voir",
+      "title": "Votre boutique Eden Park à Arcachon",
+      "text": "À deux pas de la plage, toute l'équipe vous accueille 7 jours sur 7 pour vous conseiller, faire un essayage ou retirer gratuitement votre commande en ligne.",
+      "image": { "src": "boutique/boutique-eden-park-arcachon-interieur.jpg", "alt": "Intérieur de la boutique Eden Park Arcachon, boulevard de la Plage" }
+    },
+    "instagram": {
+      "title": "Suivez-nous sur Instagram",
+      "text": "Nouveautés, coulisses de la boutique et la vie du Bassin : rejoignez la communauté Eden Park Arcachon.",
+      "images": [
+        { "src": "lookbook/t-shirt-eden-park-college-1987.jpg", "alt": "T-shirt Eden Park College 1987 porté à Arcachon" },
+        { "src": "produits/polo-queue-de-baleine-jetee-thiers.jpg", "alt": "Polo queue de baleine sur la jetée Thiers" },
+        { "src": "lookbook/ensemble-flanelle-chocolat.jpg", "alt": "Ensemble en flanelle chocolat Eden Park" },
+        { "src": "lookbook/t-shirt-noeud-papillon-rose.jpg", "alt": "T-shirt Eden Park bleu au nœud papillon rose" },
+        { "src": "lookbook/veste-denim-brut.jpg", "alt": "Veste en denim brut Eden Park" },
+        { "src": "lookbook/parfum-eden-park.jpg", "alt": "Parfum Eden Park sous le ciel du Bassin" }
+      ]
+    }
+  },
+  "collection": {
+    "eyebrow": "Lookbook · Automne 2026",
+    "title": "Notre collection",
+    "lead": "Des pièces signature brodées aux emblèmes du Bassin, et les essentiels Eden Park de la saison, à découvrir en boutique. Voici nos silhouettes préférées, vues à Arcachon.",
+    "hero_looks": [
+      { "src": "produits/polo-dune-du-pyla-marine-porte.jpg", "alt": "Polo Eden Park Dune du Pyla marine porté sur les hauteurs du Pyla", "title": "Face au Bassin", "subtitle": "Polo « Dune du Pyla » marine" },
+      { "src": "produits/polo-queue-de-baleine-jetee-thiers.jpg", "alt": "Polo Eden Park queue de baleine porté sur la jetée Thiers d'Arcachon", "title": "Jetée Thiers", "subtitle": "Polo « Queue de baleine »" }
+    ],
+    "hero_button_label": "Shopper les polos Bassin",
+    "hero_button_link": "/boutique/polos/",
+    "story": {
+      "eyebrow": "L'histoire",
+      "title": "Une collection née sur le boulevard de la Plage",
+      "paragraphs": [
+        "Tout est parti d'une envie simple : offrir à nos clients, Arcachonnais de toujours comme amoureux de passage, un Eden Park qui leur rappelle le Bassin.",
+        "Nous avons d'abord personnalisé un polo avec la queue de baleine de la jetée Thiers. Puis est venu le modèle « Dune du Pyla », brodé de la silhouette de la dune et signé au dos d'une phrase qui nous ressemble : « L'élégance au cœur du Bassin ».",
+        "La casquette à écusson, le t-shirt et le sweat complètent aujourd'hui cette collection, qui continuera de s'agrandir au fil des saisons."
+      ],
+      "tag": "Brodé à Arcachon",
+      "image": { "src": "produits/polo-dune-du-pyla-dos-elegance-au-coeur-du-bassin.jpg", "alt": "Casquette Bassin d'Arcachon et dos brodé du polo Dune du Pyla" }
+    },
+    "season": {
+      "eyebrow": "Aussi en boutique",
+      "title": "Les essentiels Eden Park de la saison",
+      "lead": "Flanelle chocolat, denim brut, touches de couleur… Retrouvez toute la collection Eden Park dans notre boutique d'Arcachon.",
+      "looks": [
+        { "src": "lookbook/ensemble-flanelle-chocolat.jpg", "alt": "Ensemble Eden Park en flanelle chocolat", "title": "Flanelle chocolat", "subtitle": "L'élégance de la demi-saison" },
+        { "src": "lookbook/veste-denim-brut.jpg", "alt": "Veste Eden Park en denim brut aux détails chocolat", "title": "Denim brut", "subtitle": "En total look" },
+        { "src": "lookbook/t-shirt-eden-park-rouge.jpg", "alt": "T-shirt Eden Park rouge et noir porté à Arcachon", "title": "Un peu de couleur", "subtitle": "Esprit rugby" },
+        { "src": "lookbook/t-shirt-eden-park-college-1987.jpg", "alt": "T-shirt Eden Park College 1987 blanc et marine", "title": "Collège 1987", "subtitle": "L'héritage Eden Park" },
+        { "src": "lookbook/t-shirt-noeud-papillon-rose.jpg", "alt": "T-shirt Eden Park bleu au nœud papillon rose dans le dos", "title": "Le nœud papillon", "subtitle": "L'emblème de la marque" },
+        { "src": "lookbook/parfum-eden-park.jpg", "alt": "Parfum Eden Park tenu sous le ciel bleu", "title": "Le parfum", "subtitle": "Le reflet de votre personnalité" }
+      ]
+    }
+  },
+  "boutique": {
+    "eyebrow": "Eden Park Arcachon",
+    "title": "Votre boutique Eden Park à Arcachon",
+    "lead": "Au 296 boulevard de la Plage, à deux pas du front de mer et de la jetée Thiers, notre équipe vous accueille 7 jours sur 7 dans l'univers Eden Park : polos, chemises, pulls, accessoires… et la collection exclusive Bassin d'Arcachon.",
+    "photos": [
+      { "src": "boutique/boutique-eden-park-arcachon-interieur.jpg", "alt": "Intérieur de la boutique Eden Park, 296 boulevard de la Plage à Arcachon" },
+      { "src": "boutique/boutique-eden-park-arcachon-equipe.jpg", "alt": "L'équipe Eden Park Arcachon conseille les clients en boutique" }
+    ],
+    "access": "La boutique se trouve en centre-ville, sur le boulevard de la Plage, entre la jetée Thiers et la jetée d'Eyrac. Parkings publics à proximité (parking Indigo Arcachon Centre-Ville Plage à moins de 100 m). Gare SNCF d'Arcachon à 10 minutes à pied.",
+    "services": [
+      { "title": "Conseil personnalisé", "text": "Taille, coupe, association de couleurs : nous prenons le temps de vous conseiller, pour vous ou pour offrir." },
+      { "title": "Retrait de commande", "text": "Commandez en ligne et choisissez « Retrait en boutique » : c'est gratuit, et vous pouvez essayer sur place." },
+      { "title": "Cartes cadeaux", "text": "Les cartes cadeaux Eden Park sont disponibles en boutique : l'idée cadeau qui fait toujours plaisir." }
+    ]
+  }
+}

@@ -1,0 +1,89 @@
+// Étape de build : récupère tout ce qui a été enregistré depuis l'espace admin
+// (Netlify Blobs) avant la génération des pages par build.rb :
+//   catalogue → data/products.json, stock → data/stock.json,
+//   réglages → data/site.json, textes des pages → data/content.json,
+//   photos envoyées → src/assets/img/uploads/ (et produits/uploads/).
+// Si le stockage est inaccessible en local, on garde les fichiers du dépôt.
+
+import { promises as fs } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { store } from "../netlify/lib/store.mjs";
+
+const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
+const IMG = path.join(ROOT, "src/assets/img");
+
+const readJSON = async (f) => JSON.parse(await fs.readFile(path.join(ROOT, f), "utf8"));
+const writeJSON = (f, obj) => fs.writeFile(path.join(ROOT, f), JSON.stringify(obj, null, 2) + "\n");
+
+const isObj = (v) => v && typeof v === "object" && !Array.isArray(v);
+function deepMerge(base, over) {
+  if (!isObj(base) || !isObj(over)) return over === undefined ? base : over;
+  const out = { ...base };
+  for (const [k, v] of Object.entries(over)) out[k] = isObj(v) && isObj(base[k]) ? deepMerge(base[k], v) : v;
+  return out;
+}
+
+// Toutes les photos envoyées depuis l'admin référencées dans un objet
+function uploadedPaths(value, out = new Set()) {
+  if (typeof value === "string") {
+    if (/^(produits\/)?uploads\/[a-z0-9-]+\.jpg$/.test(value)) out.add(value);
+  } else if (value && typeof value === "object") {
+    for (const v of Object.values(value)) uploadedPaths(v, out);
+  }
+  return out;
+}
+
+async function main() {
+  let catalogStore, siteStore;
+  let catalog, settings, content;
+  try {
+    catalogStore = await store("catalog");
+    siteStore = await store("site");
+    catalog = await catalogStore.get("products", { type: "json" });
+    settings = await siteStore.get("settings", { type: "json" });
+    content = await siteStore.get("content", { type: "json" });
+  } catch (e) {
+    if (process.env.NETLIFY === "true") {
+      // sur Netlify : on arrête le build pour que la version en ligne reste intacte
+      console.error(`✗ Stockage Netlify Blobs inaccessible (${e.message}) : build interrompu, le site en ligne n'est pas modifié.`);
+      process.exit(1);
+    }
+    console.warn(`⚠ Stockage Netlify Blobs inaccessible (${e.message}) : utilisation des fichiers data/*.json`);
+    return;
+  }
+
+  if (catalog) {
+    const current = await readJSON("data/products.json");
+    await writeJSON("data/products.json", { _note: current._note, categories: catalog.categories, products: catalog.products });
+  }
+  // Stock : celui enregistré via l'admin, sinon celui du dépôt (saisi en local avant la mise en ligne)
+  const products = (catalog || (await readJSON("data/products.json"))).products;
+  const stockStore = await store("stock");
+  const previous = await readJSON("data/stock.json").catch(() => ({}));
+  const stock = {};
+  let stockCount = 0;
+  for (const p of products) {
+    const saved = await stockStore.get(p.slug, { type: "json" });
+    if (saved) stockCount++;
+    stock[p.slug] = saved || previous[p.slug] || {};
+  }
+  await writeJSON("data/stock.json", stock);
+  if (settings) await writeJSON("data/site.json", deepMerge(await readJSON("data/site.json"), settings));
+  if (content) await writeJSON("data/content.json", { _note: (await readJSON("data/content.json"))._note, ...content });
+
+  const images = await store("images");
+  let count = 0;
+  for (const rel of uploadedPaths([catalog, content])) {
+    const name = path.basename(rel);
+    await fs.mkdir(path.join(IMG, path.dirname(rel)), { recursive: true });
+    for (const n of [name, name.replace(/\.jpg$/, "-720.jpg")]) {
+      const data = await images.get(n, { type: "arrayBuffer" });
+      if (data) { await fs.writeFile(path.join(IMG, path.dirname(rel), n), Buffer.from(data)); count++; }
+      else if (!(await fs.stat(path.join(IMG, path.dirname(rel), n)).catch(() => null))) console.warn(`⚠ Photo introuvable : ${n}`);
+    }
+  }
+  console.log(`Synchronisation depuis l'admin : catalogue ${catalog ? "✓" : "–"}, stock ${stockCount ? "✓" : "–"}, réglages ${settings ? "✓" : "–"}, pages ${content ? "✓" : "–"}, ${count} photos.`);
+}
+
+main().catch((e) => { console.error(e); process.exit(1); });

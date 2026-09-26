@@ -1,0 +1,53 @@
+{
+  "_note": "Informations de la boutique. Les champs marqués PROVISOIRE sont à confirmer par Matthieu avant la mise en ligne.",
+  "name": "Eden Park Arcachon",
+  "url": "https://edenpark-arcachon.fr",
+  "tagline": "L'élégance au cœur du Bassin",
+  "description": "Boutique Eden Park d'Arcachon : polos, t-shirts, sweats et casquettes brodés aux couleurs du Bassin d'Arcachon. Collection exclusive, livraison en France et DOM-TOM, retrait gratuit en boutique.",
+  "phone": "09 77 31 88 06",
+  "phone_intl": "+33977318806",
+  "email": "contact@edenpark-arcachon.fr",
+  "email_provisional": true,
+  "address": {
+    "street": "296 boulevard de la Plage",
+    "postal_code": "33120",
+    "city": "Arcachon",
+    "region": "Nouvelle-Aquitaine",
+    "country": "FR"
+  },
+  "geo": { "lat": 44.661912631, "lng": -1.171841045 },
+  "hours": [
+    { "days": "Lundi – Samedi", "slots": "10h – 13h · 14h30 – 19h", "schema_days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], "opens": ["10:00", "14:30"], "closes": ["13:00", "19:00"] },
+    { "days": "Dimanche", "slots": "13h – 18h", "schema_days": ["Sunday"], "opens": ["13:00"], "closes": ["18:00"] }
+  ],
+  "social": {
+    "instagram": "https://www.instagram.com/edenpark_arcachon/",
+    "facebook": "https://www.facebook.com/EdenParkArcachon/"
+  },
+  "google_maps": "https://www.google.com/maps/search/?api=1&query=Eden+Park+296+boulevard+de+la+Plage+33120+Arcachon",
+  "legal": {
+    "company": "MAMIL27",
+    "form": "Société par actions simplifiée (SAS)",
+    "capital": "[PROVISOIRE – capital social à compléter]",
+    "siren": "911 065 852",
+    "siret": "911 065 852 00012",
+    "rcs": "RCS Bordeaux 911 065 852",
+    "vat": "FR50 911 065 852",
+    "naf": "47.71Z – Commerce de détail d'habillement en magasin spécialisé",
+    "director": "Matthieu Lapeyrere",
+    "director_title": "Président",
+    "host": "Netlify, Inc. – 512 2nd Street, Suite 200, San Francisco, CA 94107, États-Unis – www.netlify.com",
+    "mediator": "[PROVISOIRE – nom et coordonnées du médiateur de la consommation à compléter]"
+  },
+  "shipping": {
+    "metro_price": 690,
+    "free_threshold": 12000,
+    "domtom_price": 1500,
+    "metro_delay": "2 à 4 jours ouvrés",
+    "domtom_delay": "5 à 10 jours ouvrés",
+    "backorder_days": 15,
+    "carrier": "Colissimo"
+  },
+  "return_days": 30,
+  "analytics_id": "G-XXXXXXXXXX"
+}

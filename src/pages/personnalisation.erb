@@ -1,0 +1,76 @@
+<header class="page-head page-head--sand">
+  <div class="wrap">
+    <p class="eyebrow">Service sur demande</p>
+    <h1>Personnalisation & broderie</h1>
+    <p class="lead">La queue de baleine, la Dune du Pyla… nos broderies sont nées en boutique. Nous pouvons aussi créer la vôtre : entreprises du Bassin, clubs sportifs, associations, mariages, séminaires ou événements.</p>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap two-col">
+    <div>
+      <h2>Comment ça marche ?</h2>
+      <ol class="checks" style="counter-reset:step">
+        <li><%= icon('chat') %><span><strong>Vous nous décrivez votre projet</strong><br>Via le formulaire ci-contre ou directement en boutique : quantité, pièces souhaitées, idée de motif.</span></li>
+        <li><%= icon('needle') %><span><strong>Nous imaginons la broderie ensemble</strong><br>Emplacement, couleurs de fil, taille du motif : nous vous proposons un visuel et un devis.</span></li>
+        <li><%= icon('check') %><span><strong>Validation et réalisation</strong><br>Une fois le visuel validé, nous lançons la fabrication. Le délai vous est précisé dans le devis.</span></li>
+        <li><%= icon('store') %><span><strong>Retrait ou livraison</strong><br>Récupérez votre commande à la boutique d'Arcachon ou faites-la livrer.</span></li>
+      </ol>
+      <div class="split__media" style="margin-top:30px">
+        <%= simple_img('produits/polo-dune-du-pyla-bassin-arcachon-broderie.jpg', "Exemple de broderie personnalisée Eden Park Arcachon : Dune du Pyla", sizes: '(max-width: 860px) 100vw, 45vw') %>
+      </div>
+    </div>
+
+    <div>
+      <h2>Demander un devis</h2>
+      <p style="color:var(--muted)">Réponse de l'équipe sous 48 h ouvrées. Aucun paiement en ligne n'est demandé pour une personnalisation.</p>
+      <form class="form" <%= netlify_form_attrs('personnalisation') %>>
+        <%= form_hidden('personnalisation') %>
+        <div class="form__row">
+          <div class="field"><label for="pz-nom">Nom et prénom *</label><input id="pz-nom" name="nom" autocomplete="name" required></div>
+          <div class="field"><label for="pz-orga">Société / association</label><input id="pz-orga" name="organisation" autocomplete="organization"></div>
+        </div>
+        <div class="form__row">
+          <div class="field"><label for="pz-email">E-mail *</label><input id="pz-email" type="email" name="email" autocomplete="email" required></div>
+          <div class="field"><label for="pz-tel">Téléphone</label><input id="pz-tel" type="tel" name="telephone" autocomplete="tel"></div>
+        </div>
+        <div class="form__row">
+          <div class="field">
+            <label for="pz-type">Type de projet *</label>
+            <select id="pz-type" name="type-de-projet" required>
+              <option value="">Choisir…</option>
+              <option>Entreprise / tenue d'équipe</option>
+              <option>Club sportif / association</option>
+              <option>Mariage / événement privé</option>
+              <option>Séminaire / cadeau d'affaires</option>
+              <option>Cadeau personnel</option>
+              <option>Autre</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="pz-qte">Quantité estimée *</label>
+            <select id="pz-qte" name="quantite" required>
+              <option value="">Choisir…</option>
+              <option>1 à 5 pièces</option>
+              <option>6 à 20 pièces</option>
+              <option>21 à 50 pièces</option>
+              <option>Plus de 50 pièces</option>
+            </select>
+          </div>
+        </div>
+        <fieldset class="field" style="border:0;padding:0;margin:0">
+          <legend style="display:block;font-size:.74rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px">Pièces souhaitées</legend>
+          <div class="chips">
+<% %w[Polos T-shirts Sweats Casquettes Autre].each do |x| -%>
+            <label class="chip"><input type="checkbox" name="pieces" value="<%= x %>"><span><%= x %></span></label>
+<% end -%>
+          </div>
+        </fieldset>
+        <div class="field"><label for="pz-date">Date souhaitée</label><input id="pz-date" type="date" name="date-souhaitee"></div>
+        <div class="field"><label for="pz-msg">Votre projet *</label><textarea id="pz-msg" name="message" required placeholder="Motif, couleurs, emplacement de la broderie, occasion…"></textarea><small>Vous avez un logo ? Envoyez-le-nous par e-mail après votre demande à <%= h(SITE['email']) %>.</small></div>
+        <%= rgpd_checkbox('pz-rgpd') %>
+        <button class="btn" type="submit">Envoyer ma demande</button>
+      </form>
+    </div>
+  </div>
+</section>

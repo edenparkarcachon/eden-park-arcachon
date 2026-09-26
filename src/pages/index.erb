@@ -1,0 +1,148 @@
+<% hm = CONTENT['home']; hero = hm['hero'] -%>
+<section class="hero">
+  <div class="hero__media">
+    <%= content_img(hero['image'], priority: true) %>
+  </div>
+  <div class="wrap">
+    <div class="hero__content">
+      <p class="eyebrow"><%= h(hero['eyebrow']) %></p>
+      <h1><%= h(hero['title']) %> <span class="accent"><%= h(hero['accent']) %></span></h1>
+      <p><%= h(hero['text']) %></p>
+      <div class="hero__ctas">
+<% unless hero['cta1_label'].to_s.empty? -%>
+        <a class="btn btn--light" href="<%= h(hero['cta1_link']) %>"><%= h(hero['cta1_label']) %></a>
+<% end -%>
+<% unless hero['cta2_label'].to_s.empty? -%>
+        <a class="btn btn--ghost-light" href="<%= h(hero['cta2_link']) %>"><%= h(hero['cta2_label']) %></a>
+<% end -%>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%= reassurance %>
+
+<section class="section" aria-labelledby="h-cats">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow"><%= h(hm['universes']['eyebrow']) %></p>
+        <h2 id="h-cats"><%= h(hm['universes']['title']) %></h2>
+      </div>
+      <a class="link-arrow" href="/boutique/">Tout voir <%= icon('arrow') %></a>
+    </div>
+    <div class="cats">
+<% shop_cats.each do |c| img = category_image(c) -%>
+      <a class="cat-card fade-up" href="<%= category_url(c) %>">
+        <%= img ? img_tag(img, alt: '', sizes: '(max-width: 900px) 50vw, 25vw') : '' %>
+        <span class="cat-card__label"><strong><%= h(c['name']) %></strong><span>Découvrir</span></span>
+      </a>
+<% end -%>
+    </div>
+  </div>
+</section>
+
+<% unless featured.empty? -%>
+<section class="section section--sand" aria-labelledby="h-featured">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow"><%= h(hm['featured']['eyebrow']) %></p>
+        <h2 id="h-featured"><%= h(hm['featured']['title']) %></h2>
+      </div>
+      <a class="link-arrow" href="/boutique/">Voir toute la boutique <%= icon('arrow') %></a>
+    </div>
+    <div class="grid">
+<% featured.each do |p| -%>
+      <%= product_card(p) %>
+<% end -%>
+    </div>
+  </div>
+</section>
+<% end -%>
+
+<% st = hm['story'] -%>
+<section class="section" aria-labelledby="h-story">
+  <div class="wrap">
+    <div class="split">
+      <div class="split__media fade-up">
+        <%= content_img(st['image'], sizes: '(max-width: 860px) 100vw, 50vw') %>
+<% unless st['tag'].to_s.empty? -%>
+        <span class="tag"><%= h(st['tag']) %></span>
+<% end -%>
+      </div>
+      <div>
+        <p class="eyebrow"><%= h(st['eyebrow']) %></p>
+        <h2 id="h-story"><%= h(st['title']) %></h2>
+        <p class="lead"><%= h(st['lead']) %></p>
+        <%= paragraphs(st['text']) %>
+        <a class="btn" href="/notre-collection/"><%= h(st['button_label']) %></a>
+      </div>
+    </div>
+<% unless hm['emblems'].empty? -%>
+    <div class="emblems">
+<% hm['emblems'].each do |em| -%>
+      <div class="emblem fade-up"><%= EMBLEMS[em['icon']] || EMBLEMS['dune'] %><h3><%= h(em['title']) %></h3><p><%= h(em['text']) %></p></div>
+<% end -%>
+    </div>
+<% end -%>
+  </div>
+</section>
+
+<% ps = hm['perso'] -%>
+<section class="section section--pink" aria-labelledby="h-perso">
+  <div class="wrap">
+    <div class="split split--rev">
+      <div class="split__media fade-up">
+        <%= content_img(ps['image'], sizes: '(max-width: 860px) 100vw, 50vw') %>
+      </div>
+      <div>
+        <p class="eyebrow"><%= h(ps['eyebrow']) %></p>
+        <h2 id="h-perso"><%= h(ps['title']) %></h2>
+        <p class="lead"><%= h(ps['lead']) %></p>
+        <ul class="checks">
+<% ps['points'].each do |pt| -%>
+          <li><%= icon('check') %><span><%= h(pt) %></span></li>
+<% end -%>
+        </ul>
+        <a class="btn" href="/personnalisation/"><%= h(ps['button_label']) %></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<% so = hm['store'] -%>
+<section class="store" aria-labelledby="h-store">
+  <div class="store__media">
+    <%= content_img(so['image'], sizes: '(max-width: 860px) 100vw, 55vw') %>
+  </div>
+  <div class="store__body">
+    <p class="eyebrow" style="color:var(--pink)"><%= h(so['eyebrow']) %></p>
+    <h2 id="h-store"><%= h(so['title']) %></h2>
+    <address><%= address_html %></address>
+    <p><%= h(so['text']) %></p>
+    <%= hours_list %>
+    <div class="hero__ctas" style="margin-top:0">
+      <a class="btn btn--light" href="/boutique-arcachon/">Infos pratiques</a>
+      <a class="btn btn--ghost-light" href="<%= SITE['google_maps'] %>" target="_blank" rel="noopener">Itinéraire</a>
+    </div>
+  </div>
+</section>
+
+<% ig = hm['instagram'] -%>
+<section class="section" aria-labelledby="h-insta">
+  <div class="wrap">
+    <div class="center">
+      <div class="bow-sep"><%= bow(cls: '') %></div>
+      <p class="eyebrow">@<%= h(SITE['social']['instagram'].to_s.sub(%r{/\z}, '').split('/').last) %></p>
+      <h2 id="h-insta"><%= h(ig['title']) %></h2>
+      <p class="lead" style="margin-bottom:36px"><%= h(ig['text']) %></p>
+    </div>
+    <div class="insta">
+<% ig['images'].each do |im| -%>
+      <a href="<%= h(SITE['social']['instagram']) %>" target="_blank" rel="noopener"><%= content_img(im, sizes: '(max-width: 760px) 33vw, 16vw') %></a>
+<% end -%>
+    </div>
+    <p class="center" style="margin-top:32px"><a class="btn btn--ghost" href="<%= h(SITE['social']['instagram']) %>" target="_blank" rel="noopener"><%= icon('instagram') %> Voir notre Instagram</a></p>
+  </div>
+</section>

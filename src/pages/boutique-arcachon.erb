@@ -1,0 +1,54 @@
+<% bq = CONTENT['boutique'] -%>
+<header class="page-head">
+  <div class="wrap">
+    <p class="eyebrow"><%= h(bq['eyebrow']) %></p>
+    <h1><%= h(bq['title']) %></h1>
+    <p class="lead"><%= h(bq['lead']) %></p>
+  </div>
+</header>
+
+<% unless bq['photos'].empty? -%>
+<section class="wrap" aria-label="Photos de la boutique">
+  <div class="look">
+<% bq['photos'].each_with_index do |ph, i| -%>
+    <figure class="<%= i % 2 == 0 ? 'l-a' : 'l-b' %> fade-up"><%= content_img(ph, sizes: i.even? ? '(max-width: 760px) 100vw, 58vw' : '(max-width: 760px) 100vw, 42vw') %></figure>
+<% end -%>
+  </div>
+</section>
+<% end -%>
+
+<section class="section">
+  <div class="wrap two-col">
+    <div>
+      <h2>Informations pratiques</h2>
+      <ul class="contact-list">
+        <li><%= icon('pin') %><span><strong>Adresse</strong><br><%= address_html %><br><a href="<%= SITE['google_maps'] %>" target="_blank" rel="noopener">Ouvrir l'itinéraire dans Google Maps</a></span></li>
+        <li><%= icon('phone') %><span><strong>Téléphone</strong><br><a href="tel:<%= SITE['phone_intl'] %>"><%= h(SITE['phone']) %></a></span></li>
+        <li><%= icon('mail') %><span><strong>E-mail</strong><br><a href="mailto:<%= h(SITE['email']) %>"><%= h(SITE['email']) %></a></span></li>
+      </ul>
+      <h3>Horaires d'ouverture</h3>
+      <%= hours_list('hours hours--light') %>
+      <h3>Accès</h3>
+      <%= paragraphs(bq['access']) %>
+    </div>
+    <div>
+      <iframe class="map" title="Plan d'accès à la boutique Eden Park Arcachon" loading="lazy" referrerpolicy="no-referrer"
+        src="<%= osm_embed %>"></iframe>
+      <p style="font-size:.8rem;color:var(--muted);margin-top:6px">Carte © contributeurs OpenStreetMap</p>
+    </div>
+  </div>
+</section>
+
+<% unless bq['services'].empty? -%>
+<section class="section section--sand">
+  <div class="wrap">
+    <div class="center"><p class="eyebrow">En boutique</p><h2>Un accueil sur mesure</h2></div>
+    <div class="info-grid">
+<% icons = %w[chat store gift]; bq['services'].each_with_index do |sv, i| -%>
+      <div class="info-card"><%= icon(icons[i % 3]) %><h3><%= h(sv['title']) %></h3><p><%= h(sv['text']) %></p></div>
+<% end -%>
+    </div>
+    <p class="center"><a class="btn" href="/boutique/">Découvrir la boutique en ligne</a></p>
+  </div>
+</section>
+<% end -%>
