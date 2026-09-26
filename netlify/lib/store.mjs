@@ -41,5 +41,9 @@ function localStore(name) {
 export async function store(name) {
   if (process.env.LOCAL_STORE_DIR) return localStore(name);
   const { getStore } = await import("@netlify/blobs");
+  // Pendant le build (plugin netlify/plugins/sync-catalog), l'accès passe par l'API Netlify
+  if (process.env.EP_BLOBS_SITE_ID && process.env.EP_BLOBS_TOKEN) {
+    return getStore({ name, siteID: process.env.EP_BLOBS_SITE_ID, token: process.env.EP_BLOBS_TOKEN });
+  }
   return getStore({ name, consistency: "strong" });
 }

@@ -7,7 +7,7 @@
 
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { store } from "../netlify/lib/store.mjs";
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -34,7 +34,8 @@ function uploadedPaths(value, out = new Set()) {
   return out;
 }
 
-async function main() {
+// strict : sur Netlify, un stockage inaccessible arrête le build (le site en ligne reste intact)
+export async function runSync({ strict = false } = {}) {
   let catalogStore, siteStore;
   let catalog, settings, content;
   try {
@@ -44,11 +45,7 @@ async function main() {
     settings = await siteStore.get("settings", { type: "json" });
     content = await siteStore.get("content", { type: "json" });
   } catch (e) {
-    if (process.env.NETLIFY === "true") {
-      // sur Netlify : on arrête le build pour que la version en ligne reste intacte
-      console.error(`✗ Stockage Netlify Blobs inaccessible (${e.message}) : build interrompu, le site en ligne n'est pas modifié.`);
-      process.exit(1);
-    }
+    if (strict) throw new Error(`Stockage Netlify Blobs inaccessible (${e.message}) : build interrompu, le site en ligne n'est pas modifié.`);
     console.warn(`⚠ Stockage Netlify Blobs inaccessible (${e.message}) : utilisation des fichiers data/*.json`);
     return;
   }
@@ -86,4 +83,7 @@ async function main() {
   console.log(`Synchronisation depuis l'admin : catalogue ${catalog ? "✓" : "–"}, stock ${stockCount ? "✓" : "–"}, réglages ${settings ? "✓" : "–"}, pages ${content ? "✓" : "–"}, ${count} photos.`);
 }
 
-main().catch((e) => { console.error(e); process.exit(1); });
+// Lancé en ligne de commande (npm run build, serveur local)
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+  runSync().catch((e) => { console.error(e); process.exit(1); });
+}

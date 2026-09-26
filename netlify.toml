@@ -1,5 +1,6 @@
 [build]
-  command = "npm run build"
+  # la synchronisation avec l'admin est faite juste avant par le plugin ci-dessous
+  command = "ruby build.rb"
   publish = "dist"
 
 [build.environment]
@@ -29,3 +30,6 @@
   for = "/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+[[plugins]]
+  package = "./netlify/plugins/sync-catalog"
