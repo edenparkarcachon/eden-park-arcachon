@@ -46,6 +46,7 @@
     memoryCart = c;
     store(CART_KEY, c);
     renderCart();
+    refreshPromo();
   }
   function addToCart(slug, color, size, qty) {
     var c = getCart();
@@ -128,11 +129,18 @@
         summary.hidden = false;
         lines.innerHTML = c.map(function (l, i) { return lineHtml(l, i, true); }).join('');
         var zone = currentZone();
-        var ship = shippingCost(zone, sub);
+        var discount = PROMO ? Math.min(PROMO.discount || 0, sub) : 0;
+        var freeShip = !!(PROMO && PROMO.freeShipping);
+        var ship = freeShip ? 0 : shippingCost(zone, sub - discount);
         $('[data-shipping]').textContent = ship ? euro(ship) : (zone === 'retrait' ? 'Gratuit' : 'Offerte');
-        $('[data-total]').textContent = euro(sub + ship);
+        $('[data-discount-row]').hidden = !discount;
+        if (discount) {
+          $('[data-discount-label]').textContent = 'Code ' + PROMO.code + ' (' + PROMO.label + ')';
+          $('[data-discount]').textContent = '−' + euro(discount);
+        }
+        $('[data-total]').textContent = euro(sub - discount + ship);
         var mp = $('[data-ship-price="metro"]');
-        if (mp) mp.textContent = sub >= SHIP.free_threshold ? 'Offerte' : euro(SHIP.metro_price);
+        if (mp) mp.textContent = freeShip || sub - discount >= SHIP.free_threshold ? 'Offerte' : euro(SHIP.metro_price);
         var late = c.some(function (l) { return isLate(l.slug, l.color, l.size, l.qty); });
         $('[data-backorder-note]').innerHTML = late
           ? '<div class="notice">Un ou plusieurs articles sont <strong>sur commande</strong> : votre commande vous parviendra sous ' + BACKORDER_DAYS + ' jours environ.</div>'
@@ -140,6 +148,59 @@
       }
     }
   }
+  /* ---------- Code promo (panier) ---------- */
+  var PROMO_KEY = 'ep_promo';
+  var PROMO = null; // { code, discount, freeShipping, label } renvoyé par le serveur
+  var promoTimer;
+  function promoMsg(html, cls) {
+    var m = $('[data-promo-msg]');
+    if (!m) return;
+    m.className = 'promo__msg' + (cls ? ' ' + cls : '');
+    m.innerHTML = html;
+  }
+  function checkPromo(code, silent) {
+    if (!code) return;
+    fetch('/api/promo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: code, items: getCart() }) })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, status: r.status, d: d }; }); })
+      .then(function (res) {
+        if (res.ok) {
+          PROMO = res.d;
+          store(PROMO_KEY, PROMO.code);
+          promoMsg('Code <strong>' + esc(PROMO.code) + '</strong> appliqué : ' + esc(PROMO.label) + '<button type="button" data-promo-remove>Retirer</button>', 'is-ok');
+        } else {
+          PROMO = null;
+          if (!silent || res.status === 400) promoMsg(esc(res.d.error || 'Code invalide') + (store(PROMO_KEY) ? '<button type="button" data-promo-remove>Retirer</button>' : ''), 'is-error');
+        }
+        renderCart();
+      })
+      .catch(function () { promoMsg('Les codes promo ne sont pas disponibles pour le moment.', 'is-error'); });
+  }
+  var promoForm = $('[data-promo-form]');
+  if (promoForm) {
+    promoForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var code = promoForm.code.value.trim().toUpperCase();
+      if (!code) { promoMsg('Saisissez un code.', 'is-error'); return; }
+      checkPromo(code, false);
+    });
+    promoForm.addEventListener('click', function (e) {
+      if (!e.target.closest('[data-promo-remove]')) return;
+      PROMO = null;
+      store(PROMO_KEY, null);
+      promoForm.code.value = '';
+      promoMsg('');
+      renderCart();
+    });
+    var savedCode = store(PROMO_KEY);
+    if (savedCode) { promoForm.code.value = savedCode; checkPromo(savedCode, true); }
+  }
+  // le montant de la remise dépend du panier : on le recalcule après chaque modification
+  function refreshPromo() {
+    if (!promoForm || !PROMO) return;
+    clearTimeout(promoTimer);
+    promoTimer = setTimeout(function () { checkPromo(PROMO.code, true); }, 350);
+  }
+
   function updateLine(i, qty) {
     var c = getCart();
     if (!c[i]) return;
@@ -265,6 +326,7 @@
       inp.nextElementSibling.title = out ? 'Sur commande – expédition sous ' + BACKORDER_DAYS + ' jours' : '';
     });
     var el = $('[data-availability]');
+    renderEta();
     if (!size) { el.innerHTML = ''; return; }
     var a = avail(slug, color, size.value);
     var qty = Math.max(1, parseInt(form.qty.value, 10) || 1);
@@ -279,6 +341,77 @@
         ? '<strong>Seulement ' + a + ' en stock</strong> · au-delà, commande expédiée sous ' + BACKORDER_DAYS + ' jours'
         : '<strong>Sur commande</strong> · expédition sous ' + BACKORDER_DAYS + ' jours';
     }
+  }
+
+  /* Date de livraison estimée (fiche produit) */
+  function addBusinessDays(d, n) {
+    var x = new Date(d);
+    while (n > 0) { x.setDate(x.getDate() + 1); if (x.getDay() !== 0 && x.getDay() !== 6) n--; }
+    return x;
+  }
+  function fmtDay(d) { return d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }); }
+  function renderEta() {
+    var el = $('[data-eta]');
+    if (!el || !form) return;
+    var size = $('input[name="size"]:checked', form);
+    if (!size) { el.innerHTML = ''; return; }
+    var color = $('input[name="color"]:checked', form).value;
+    var qty = Math.max(1, parseInt(form.qty.value, 10) || 1);
+    var today = new Date();
+    var m = String(SHIP.metro_delay || '').match(/(\d+)\D+(\d+)/);
+    var tmin = m ? +m[1] : 2, tmax = m ? +m[2] : 4;
+    var from, to, pickup;
+    if (isLate(form.slug.value, color, size.value, qty)) {
+      from = new Date(today); from.setDate(from.getDate() + Math.max(1, BACKORDER_DAYS - 3));
+      to = new Date(today); to.setDate(to.getDate() + BACKORDER_DAYS);
+      pickup = null;
+    } else {
+      from = addBusinessDays(today, 1 + tmin);   // préparation 1 à 2 jours + transport Colissimo
+      to = addBusinessDays(today, 2 + tmax);
+      pickup = addBusinessDays(today, 1);
+    }
+    el.innerHTML = 'Livraison estimée en France : entre le <strong>' + fmtDay(from) + '</strong> et le <strong>' + fmtDay(to) + '</strong>' +
+      (pickup ? '<br>Retrait gratuit en boutique dès le <strong>' + fmtDay(pickup) + '</strong>' : '');
+  }
+
+  /* Barre « Ajouter au panier » fixe sur mobile */
+  var buybar = $('[data-buybar]');
+  if (buybar && form && 'IntersectionObserver' in window) {
+    var mainBtn = $('button[type="submit"]', form);
+    new IntersectionObserver(function (entries) {
+      var hidden = !entries[0].isIntersecting && entries[0].boundingClientRect.top < 0;
+      buybar.classList.toggle('is-visible', hidden);
+      buybar.setAttribute('aria-hidden', hidden ? 'false' : 'true');
+      $('[data-buybar-add]', buybar).tabIndex = hidden ? 0 : -1;
+    }).observe(mainBtn);
+    $('[data-buybar-add]', buybar).addEventListener('click', function () {
+      if ($('input[name="size"]:checked', form)) { form.requestSubmit ? form.requestSubmit() : mainBtn.click(); return; }
+      $('[data-size-error]').hidden = false;
+      $('.size-opts', form).scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }
+
+  /* Avis clients : envoi (publié après validation par la boutique) */
+  var reviewForm = $('[data-review-form]');
+  if (reviewForm) {
+    reviewForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var msg = $('[data-review-msg]', reviewForm);
+      var fd = new FormData(reviewForm);
+      var data = {};
+      fd.forEach(function (v, k) { data[k] = v; });
+      var fail = function (t) { msg.textContent = t; msg.hidden = false; };
+      if (!data.rating) return fail('Choisissez une note en cliquant sur les étoiles.');
+      if (!data.consent) return fail('Merci d’accepter la publication de votre avis.');
+      var btn = $('button[type="submit"]', reviewForm);
+      btn.disabled = true;
+      fetch('/api/reviews', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+        .then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.error || 'Envoi impossible'); }); })
+        .then(function () {
+          reviewForm.innerHTML = '<h3>Merci pour votre avis !</h3><p>Il sera publié après vérification par notre équipe.</p>';
+        })
+        .catch(function (err) { fail(err.message === 'Failed to fetch' ? 'Envoi impossible pour le moment, réessayez plus tard.' : err.message); btn.disabled = false; });
+    });
   }
 
   /* Stock en temps réel */
@@ -401,7 +534,7 @@
       fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: c, zone: currentZone() })
+        body: JSON.stringify({ items: c, zone: currentZone(), promo: PROMO ? PROMO.code : null })
       }).then(function (r) {
         return r.json().catch(function () { return {}; }).then(function (data) { return { ok: r.ok, status: r.status, data: data }; });
       }).then(function (res) {
@@ -424,7 +557,7 @@
   /* Page de remerciement : vide le panier */
   if ($('[data-thanks]')) {
     var params = new URLSearchParams(location.search);
-    if (params.get('session_id') || params.get('demo')) saveCart([]);
+    if (params.get('session_id') || params.get('demo')) { store('ep_promo', null); saveCart([]); }
     if (params.get('demo')) $('[data-demo-notice]').hidden = false;
   }
 

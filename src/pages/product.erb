@@ -17,6 +17,9 @@
     <p class="eyebrow"><a href="<%= category_url(c) %>" style="text-decoration:none"><%= h(c['name']) %></a> · Eden Park Arcachon</p>
     <h1><%= h(p['name']) %></h1>
     <p class="pinfo__price"><%= euro(p['price']) %></p>
+<% if rating_of(p) -%>
+    <a class="rating-link" href="#avis"><%= stars(rating_of(p)) %> <span><%= rating_of(p).to_s.sub('.', ',') %>/5 · <%= reviews_for(p).size %> avis</span></a>
+<% end -%>
     <p class="pinfo__tax">TTC · Livraison offerte dès <%= euro(SITE['shipping']['free_threshold']) %></p>
     <p class="pinfo__short"><%= h(p['short']) %></p>
 
@@ -44,6 +47,7 @@
         </div>
         <p class="opt__error" data-size-error hidden>Veuillez choisir une taille.</p>
         <p class="availability" data-availability aria-live="polite"></p>
+        <p class="eta" data-eta></p>
       </fieldset>
 
       <div class="buy">
@@ -93,6 +97,11 @@
   </div>
 </div>
 
+<div class="buybar" data-buybar aria-hidden="true">
+  <div class="buybar__info"><strong><%= h(p['name']) %></strong><span><%= euro(p['price']) %></span></div>
+  <button class="btn" type="button" data-buybar-add tabindex="-1">Ajouter au panier</button>
+</div>
+
 <% unless single_size -%>
 <dialog id="size-guide" aria-labelledby="sg-title">
   <div class="dialog__head"><h2 id="sg-title">Guide des tailles Eden Park</h2><button class="icon-btn" type="button" data-close-dialog aria-label="Fermer"><%= icon('close') %></button></div>
@@ -103,6 +112,43 @@
   </div>
 </dialog>
 <% end -%>
+
+<section class="section" id="avis" aria-labelledby="h-reviews">
+  <div class="wrap reviews">
+    <div>
+      <h2 id="h-reviews">Avis clients</h2>
+<% list = reviews_for(p) -%>
+<% if list.empty? -%>
+      <p class="muted-text">Aucun avis pour le moment. Soyez le premier à donner votre avis sur ce modèle !</p>
+<% else -%>
+      <p class="reviews__avg"><%= stars(rating_of(p)) %> <strong><%= rating_of(p).to_s.sub('.', ',') %>/5</strong> · <%= list.size %> avis</p>
+<% list.first(20).each do |r| -%>
+      <article class="review">
+        <p class="review__head"><%= stars(r['rating']) %> <strong><%= h(r['name']) %></strong><% if r['verified'] %> <span class="badge badge--pink">Achat vérifié</span><% end %> <time datetime="<%= r['date'] %>"><%= Date.parse(r['date']).strftime('%d/%m/%Y') %></time></p>
+        <%= paragraphs(r['text']) %>
+      </article>
+<% end -%>
+<% end -%>
+    </div>
+    <form class="form review-form" data-review-form novalidate>
+      <h3>Donner mon avis</h3>
+      <input type="hidden" name="slug" value="<%= p['slug'] %>">
+      <p class="hp"><label>Ne pas remplir <input name="website" tabindex="-1" autocomplete="off"></label></p>
+      <fieldset class="rating-input">
+        <legend class="opt__label">Votre note *</legend>
+<% 5.downto(1) do |n| -%>
+        <input type="radio" name="rating" id="rv-<%= n %>" value="<%= n %>"><label for="rv-<%= n %>" title="<%= n %> étoile<%= n > 1 ? 's' : '' %>">★</label>
+<% end -%>
+      </fieldset>
+      <div class="field"><label for="rv-name">Prénom *</label><input id="rv-name" name="name" maxlength="40" autocomplete="given-name" required></div>
+      <div class="field"><label for="rv-text">Votre avis *</label><textarea id="rv-text" name="text" maxlength="1500" required placeholder="Taille, qualité de la broderie, confort…"></textarea></div>
+      <div class="field"><label for="rv-email">E-mail utilisé pour la commande</label><input id="rv-email" type="email" name="email" autocomplete="email"><small>Facultatif, jamais publié : il permet d'afficher « Achat vérifié ».</small></div>
+      <label class="consent" for="rv-consent"><input type="checkbox" id="rv-consent" name="consent" value="1" required> <span>J'accepte que mon prénom et mon avis soient publiés sur ce site après vérification. <a href="/confidentialite/">En savoir plus</a></span></label>
+      <p class="opt__error" data-review-msg hidden></p>
+      <button class="btn" type="submit">Envoyer mon avis</button>
+    </form>
+  </div>
+</section>
 
 <section class="section section--sand" aria-labelledby="h-related">
   <div class="wrap">

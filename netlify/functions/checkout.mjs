@@ -10,6 +10,7 @@
 
 import { getCatalog, getStock, isBackorder, getSite, backorderDays } from "../lib/catalog.mjs";
 import { json } from "../lib/http.mjs";
+import { findPromo, evaluatePromo } from "../lib/promos.mjs";
 
 const DOMTOM = ["GP", "MQ", "GF", "RE", "YT", "PM", "BL", "MF", "WF", "PF", "NC"];
 const MAX_QTY = 10;
@@ -49,6 +50,7 @@ export async function buildSession(payload, siteUrl) {
   const metadata = { mode_livraison: zone };
   let subtotal = 0;
   let backorder = false;
+  const promoLines = [];
   for (const [i, it] of items.entries()) {
     const p = catalog.products.find((x) => x.slug === it.slug);
     const qty = Math.min(MAX_QTY, Math.max(1, parseInt(it.qty, 10) || 0));
@@ -58,6 +60,7 @@ export async function buildSession(payload, siteUrl) {
     const late = isBackorder(await getStock(p.slug), it.color, it.size, qty);
     backorder = backorder || late;
     subtotal += p.price * qty;
+    promoLines.push({ price: p.price, qty, category: p.category });
     const photo = p.images.find((im) => im.src && !im.placeholder);
     const name = p.name.replace(/[«»]/g, "").replace(/\s+/g, " ").trim();
     lineItems.push({
@@ -79,6 +82,21 @@ export async function buildSession(payload, siteUrl) {
   if (!lineItems.length) return { error: "Panier vide" };
   metadata.sur_commande = backorder ? "oui" : "non";
 
+  // Code promo : vérifié et calculé ici, jamais par le navigateur
+  let discount = 0;
+  let freeShipping = false;
+  let promoCode = null;
+  if (payload.promo) {
+    const result = evaluatePromo(await findPromo(payload.promo), promoLines);
+    if (result.error) return { error: result.error };
+    discount = result.discount;
+    freeShipping = result.freeShipping;
+    promoCode = result.code;
+    metadata.promo_code = promoCode;
+    metadata.remise = String(discount);
+  }
+  const promoLabel = freeShipping ? ` (offerte avec le code ${promoCode})` : "";
+
   const s = site.shipping;
   const lateLabel = ` – expédition sous ${BACKORDER_DAYS} jours (sur commande)`;
   let shippingOptions;
@@ -89,12 +107,13 @@ export async function buildSession(payload, siteUrl) {
       : shippingRate("Retrait en boutique – 296 bd de la Plage, Arcachon", 0, 1, 2)];
   } else if (zone === "domtom") {
     shippingOptions = [backorder
-      ? shippingRate(`Colissimo – DOM-TOM${lateLabel}`, s.domtom_price, BACKORDER_DAYS + 5, BACKORDER_DAYS + 12, "day")
-      : shippingRate("Colissimo – DOM-TOM", s.domtom_price, 5, 10)];
+      ? shippingRate(`Colissimo – DOM-TOM${promoLabel}${lateLabel}`, freeShipping ? 0 : s.domtom_price, BACKORDER_DAYS + 5, BACKORDER_DAYS + 12, "day")
+      : shippingRate(`Colissimo – DOM-TOM${promoLabel}`, freeShipping ? 0 : s.domtom_price, 5, 10)];
     countries = DOMTOM;
   } else {
-    const free = subtotal >= s.free_threshold;
-    const base = free ? "Colissimo – offerte" : "Colissimo – France métropolitaine";
+    // le seuil de livraison offerte s'apprécie après la remise
+    const free = freeShipping || subtotal - discount >= s.free_threshold;
+    const base = freeShipping ? `Colissimo${promoLabel}` : free ? "Colissimo – offerte" : "Colissimo – France métropolitaine";
     const price = free ? 0 : s.metro_price;
     shippingOptions = [backorder
       ? shippingRate(`${base}${lateLabel}`, price, BACKORDER_DAYS - 3, BACKORDER_DAYS, "day")
@@ -123,7 +142,7 @@ export async function buildSession(payload, siteUrl) {
   };
   if (countries) params.shipping_address_collection = { allowed_countries: countries };
   if (message) params.custom_text = { submit: { message } };
-  return { params, backorder };
+  return { params, backorder, discount, promoCode };
 }
 
 export default async (req) => {
@@ -140,17 +159,27 @@ export default async (req) => {
   }
 
   const siteUrl = (process.env.SITE_URL || (await getSite()).url).replace(/\/$/, "");
-  const { params, error } = await buildSession(payload, siteUrl);
+  const { params, error, discount, promoCode } = await buildSession(payload, siteUrl);
   if (error) return json(400, { error });
 
-  const res = await fetch("https://api.stripe.com/v1/checkout/sessions", {
+  const stripe = (path, body) => fetch(`https://api.stripe.com/v1/${path}`, {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${secret}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: encode(params),
+    headers: { Authorization: `Bearer ${secret}`, "Content-Type": "application/x-www-form-urlencoded" },
+    body: encode(body),
   });
+
+  // Remise : coupon Stripe à usage unique, du montant calculé ci-dessus
+  if (discount > 0) {
+    const cr = await stripe("coupons", { amount_off: discount, currency: "eur", duration: "once", max_redemptions: 1, name: `Code ${promoCode}` });
+    const coupon = await cr.json();
+    if (!cr.ok) {
+      console.error("Stripe coupon error", coupon.error);
+      return json(502, { error: "Le code promo n'a pas pu être appliqué, réessayez dans un instant" });
+    }
+    params.discounts = [{ coupon: coupon.id }];
+  }
+
+  const res = await stripe("checkout/sessions", params);
   const data = await res.json();
   if (!res.ok) {
     console.error("Stripe error", data.error);

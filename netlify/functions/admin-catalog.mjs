@@ -1,11 +1,11 @@
 // Espace admin : lecture et enregistrement du catalogue et du stock.
 //   GET  /api/admin/catalog  → { catalog, stock }
-//   PUT  /api/admin/catalog  { catalog, stock, publish } → enregistre, puis relance la
-//        construction du site si des produits ont changé (publish: true).
+//   PUT  /api/admin/catalog  { catalog, stock, what } → enregistre (publication via /api/admin/publish)
 //   PATCH /api/admin/catalog { stock } → met à jour le stock seulement (effet immédiat).
 
 import { getCatalog, saveCatalog, getAllStock, getStock, setStock, deleteStock, validateCatalog, variantKey } from "../lib/catalog.mjs";
-import { json, isAuthorized, unauthorized, triggerRebuild } from "../lib/http.mjs";
+import { json, isAuthorized, unauthorized } from "../lib/http.mjs";
+import { markPending } from "../lib/publish.mjs";
 
 // Fusionne les cases modifiées dans le stock existant, pour ne pas écraser un décompte
 // fait par une commande entre-temps. Valeur vide/null = variante non suivie.
@@ -53,8 +53,8 @@ export default async (req) => {
     const kept = new Set(catalog.products.map((p) => p.slug));
     for (const p of previous.products) if (!kept.has(p.slug)) await deleteStock(p.slug);
     await mergeStock(catalog.products, body.stock);
-    const rebuilt = body.publish === false ? false : await triggerRebuild();
-    return json(200, { ok: true, rebuilt, stock: await getAllStock(catalog) });
+    const publish = await markPending(body.what || "Produits");
+    return json(200, { ok: true, publish, stock: await getAllStock(catalog) });
   }
 
   return json(405, { error: "Méthode non autorisée" });

@@ -1,69 +1,41 @@
 <%
-  s = SITE['shipping']
-  faq = [
-    ['Commande', 'commande', [
-      ["Comment passer commande sur le site Eden Park Arcachon ?", "Choisissez votre article, sa couleur et sa taille, puis cliquez sur « Ajouter au panier ». Depuis le panier, sélectionnez votre mode de livraison et cliquez sur « Commander » : vous êtes redirigé vers notre page de paiement sécurisée Stripe. Vous n'avez pas besoin de créer de compte."],
-      ["Dois-je créer un compte pour commander ?", "Non. La commande se fait sans création de compte : il suffit de renseigner votre e-mail, votre adresse de livraison et votre téléphone au moment du paiement."],
-      ["Puis-je modifier ou annuler ma commande ?", "Contactez-nous au plus vite par téléphone au #{SITE['phone']} ou via le formulaire de contact. Si votre commande n'a pas encore été expédiée, nous pourrons la modifier ou l'annuler."],
-      ["Les produits de la collection Bassin d'Arcachon sont-ils disponibles ailleurs ?", "Non. Nos modèles brodés (Dune du Pyla, queue de baleine, casquette Bassin d'Arcachon…) sont des créations exclusives de la boutique Eden Park d'Arcachon : vous les trouverez uniquement sur ce site et au 296 boulevard de la Plage."]
-    ]],
-    ['Livraison', 'livraison', [
-      ["Quels sont les frais et délais de livraison ?", "En France métropolitaine, la livraison Colissimo coûte #{euro(s['metro_price'])} et elle est offerte dès #{euro(s['free_threshold'])} d'achat (#{s['metro_delay']}). Pour les DOM-TOM, elle coûte #{euro(s['domtom_price'])} (#{s['domtom_delay']}). Le retrait en boutique à Arcachon est gratuit."],
-      ["Livrez-vous à l'étranger ?", "Pour le moment, nous livrons la France métropolitaine et les DOM-TOM. Pour toute demande particulière, contactez-nous."],
-      ["Comment suivre ma commande ?", "Dès l'expédition de votre colis, vous recevez un e-mail avec votre numéro de suivi Colissimo, qui vous permet de suivre la livraison sur laposte.fr/outils/suivre-vos-envois."],
-      ["Puis-je retirer ma commande en boutique ?", "Oui, c'est gratuit. Choisissez « Retrait en boutique » dans votre panier. Nous vous prévenons dès que votre commande est prête, généralement sous 24 à 48 h."]
-    ]],
-    ['Retours & échanges', 'retours', [
-      ["Quel est le délai pour retourner un article ?", "Vous disposez de #{SITE['return_days']} jours à compter de la réception pour retourner ou échanger un article non porté, dans son état d'origine avec ses étiquettes."],
-      ["Comment échanger une taille ?", "Le plus simple est de passer à la boutique d'Arcachon. Sinon, contactez-nous avec votre numéro de commande : nous vous indiquerons la marche à suivre pour un retour, puis vous pourrez repasser commande dans la bonne taille."],
-      ["Quand serai-je remboursé ?", "Le remboursement est effectué sous 14 jours maximum après réception de l'article retourné, sur le moyen de paiement utilisé lors de la commande."]
-    ]],
-    ['Paiement', 'paiement', [
-      ["Quels sont les moyens de paiement acceptés ?", "Vous pouvez payer par carte bancaire (CB, Visa, Mastercard, American Express), Apple Pay et Google Pay. En boutique, nous acceptons également les espèces et les cartes cadeaux Eden Park."],
-      ["Le paiement est-il sécurisé ?", "Oui. Le paiement est entièrement géré par Stripe, leader mondial du paiement en ligne, certifié PCI-DSS niveau 1. Vos données bancaires ne transitent jamais par notre site et ne sont jamais stockées par nos soins."],
-      ["Vais-je recevoir une facture ?", "Oui, une confirmation de commande et un reçu vous sont envoyés par e-mail après le paiement. Pour une facture au nom d'une société, contactez-nous."]
-    ]],
-    ['Produits & tailles', 'produits', [
-      ["Comment choisir ma taille ?", "Nos modèles suivent le guide des tailles de la marque Eden Park, disponible ci-dessous et sur chaque fiche produit. En cas de doute entre deux tailles, prenez la plus grande pour une coupe plus décontractée, ou appelez-nous pour un conseil."],
-      ["Comment entretenir mon polo brodé ?", "Lavez-le en machine à 30 °C, sur l'envers, sans sèche-linge. Repassez sur l'envers en évitant la broderie : elle gardera tout son éclat."],
-      ["Proposez-vous des broderies personnalisées ?", "Oui, sur demande, pour les entreprises, associations, clubs ou événements. Décrivez-nous votre projet sur la page Personnalisation, nous vous répondrons sous 48 h ouvrées."]
-    ]]
-  ]
+  fq = CONTENT['faq']
+  sections = fq['sections'].each_with_index.map { |s, i| s.merge('id' => slugify(s['title']).then { |x| x.empty? ? "rubrique-#{i + 1}" : x }) }
   faq_schema = { '@context' => 'https://schema.org', '@type' => 'FAQPage',
-                 'mainEntity' => faq.flat_map { |_, _, qs| qs.map { |q, a| { '@type' => 'Question', 'name' => q, 'acceptedAnswer' => { '@type' => 'Answer', 'text' => a } } } } }
+                 'mainEntity' => sections.flat_map { |s| s['questions'].map { |qa| { '@type' => 'Question', 'name' => tokens(qa['q']), 'acceptedAnswer' => { '@type' => 'Answer', 'text' => tokens(qa['a']) } } } } }
 -%>
 <%= json_ld(faq_schema) %>
 <header class="page-head page-head--sand">
   <div class="wrap">
     <p class="eyebrow">Aide</p>
-    <h1>Questions fréquentes</h1>
-    <p class="lead">Commande, livraison, retours, paiement, tailles : toutes les réponses à vos questions. Vous ne trouvez pas ? <a href="/contact/">Écrivez-nous</a>.</p>
+    <h1><%= h(fq['title']) %></h1>
+    <p class="lead"><%= h(tokens(fq['lead'])) %> Vous ne trouvez pas ? <a href="/contact/">Écrivez-nous</a>.</p>
   </div>
 </header>
 
 <section class="section" style="padding-top:40px">
   <div class="wrap wrap--narrow">
     <nav class="faq-nav" aria-label="Rubriques de la FAQ">
-<% faq.each do |title, id, _| -%>
-      <a href="#<%= id %>"><%= h(title) %></a>
+<% sections.each do |s| -%>
+      <a href="#<%= s['id'] %>"><%= h(s['title']) %></a>
 <% end -%>
       <a href="#guide-des-tailles">Guide des tailles</a>
     </nav>
 
-<% faq.each do |title, id, qs| -%>
-    <h2 id="<%= id %>" style="margin-top:44px;font-size:1.5rem"><%= h(title) %></h2>
-<% qs.each do |q, a| -%>
+<% sections.each do |s| -%>
+    <h2 id="<%= s['id'] %>" style="margin-top:44px;font-size:1.5rem"><%= h(s['title']) %></h2>
+<% s['questions'].each do |qa| -%>
     <details class="acc">
-      <summary style="text-transform:none;letter-spacing:0;font-size:1rem"><%= h(q) %></summary>
-      <div class="acc__body"><p><%= h(a) %></p></div>
+      <summary style="text-transform:none;letter-spacing:0;font-size:1rem"><%= h(tokens(qa['q'])) %></summary>
+      <div class="acc__body"><%= paragraphs(tokens(qa['a'])) %></div>
     </details>
 <% end -%>
 <% end -%>
 
     <h2 id="guide-des-tailles" style="margin-top:60px;font-size:1.5rem">Guide des tailles</h2>
-    <p>Nos polos, t-shirts et sweats reprennent le guide des tailles de la marque Eden Park (hauts homme). Mesurez votre tour de poitrine sous les bras, à l'endroit le plus large, et votre tour de taille au niveau du nombril.</p>
+    <%= paragraphs(tokens(fq['size_intro'])) %>
     <%= size_table %>
-    <p><strong>Casquettes :</strong> taille unique, réglable grâce à la patte de serrage arrière.</p>
+    <%= paragraphs(tokens(fq['size_note'])) %>
     <div class="notice">Entre deux tailles ? Choisissez la plus grande pour une coupe plus décontractée. Pour un conseil personnalisé, appelez-nous au <a href="tel:<%= SITE['phone_intl'] %>"><%= h(SITE['phone']) %></a>.</div>
   </div>
 </section>

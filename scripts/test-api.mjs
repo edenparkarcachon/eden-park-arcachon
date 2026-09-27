@@ -253,6 +253,175 @@ await test("catégories : suppression d'une catégorie encore utilisée refusée
   assert.match((await r.json()).error, /Catégorie inconnue/);
 });
 
+console.log("Publication groupée");
+const publishFn = (await import("../netlify/functions/admin-publish.mjs")).default;
+await test("les enregistrements de l'admin sont mis en attente, sans publier", async () => {
+  const d = await (await publishFn(req("/admin/publish", "GET", undefined, auth()))).json();
+  assert.ok(d.pending.length >= 2, JSON.stringify(d.pending));
+  assert.ok(d.pending.some((p) => p.what === "Réglages"));
+});
+await test("publier sans lien de build configuré → message clair", async () => {
+  const r = await publishFn(req("/admin/publish", "POST", undefined, auth()));
+  assert.equal(r.status, 503);
+});
+await test("publier → un seul appel au lien de build, puis plus rien en attente", async () => {
+  let calls = 0;
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async (url, opts) => { if (String(url).startsWith("https://hook.test")) { calls++; return new Response("ok"); } return realFetch(url, opts); };
+  process.env.BUILD_HOOK_URL = "https://hook.test/abc";
+  try {
+    const d = await (await publishFn(req("/admin/publish", "POST", undefined, auth()))).json();
+    assert.equal(calls, 1);
+    assert.equal(d.pending.length, 0);
+    assert.ok(d.lastPublished);
+  } finally { globalThis.fetch = realFetch; delete process.env.BUILD_HOOK_URL; }
+});
+
+console.log("Codes promo");
+const promoFn = (await import("../netlify/functions/promo.mjs")).default;
+const adminPromos = (await import("../netlify/functions/admin-promos.mjs")).default;
+const polo = (size = "M", qty = 1) => [{ slug: "polo-dune-du-pyla", color: "Marine", size, qty }];
+await test("codes invalides refusés à l'enregistrement", async () => {
+  for (const bad of [[{ code: "a", type: "percent", percent: 10 }], [{ code: "TEST", type: "percent", percent: 150 }], [{ code: "X-1", type: "amount", amount: 0 }], [{ code: "AB1", type: "percent", percent: 5 }, { code: "ab1", type: "percent", percent: 5 }]]) {
+    assert.equal((await adminPromos(req("/admin/promos", "PUT", { promos: bad }, auth()))).status, 400, JSON.stringify(bad));
+  }
+});
+await test("création de codes : -10 %, -20 €, livraison offerte, limité aux casquettes, expiré", async () => {
+  const r = await adminPromos(req("/admin/promos", "PUT", { promos: [
+    { code: "bienvenue10", type: "percent", percent: 10, active: true },
+    { code: "MOINS20", type: "amount", amount: 2000, min_order: 10000, max_uses: 1, active: true },
+    { code: "PORTOFFERT", type: "shipping", active: true },
+    { code: "CASQUETTE", type: "percent", percent: 50, categories: ["casquettes-accessoires"], active: true },
+    { code: "ETE2020", type: "percent", percent: 30, ends: "2020-08-31", active: true },
+    { code: "PAUSE", type: "percent", percent: 30, active: false },
+    { code: "GROSPANIER", type: "amount", amount: 3000, min_order: 20000, active: true },
+  ] }, auth()));
+  assert.equal(r.status, 200);
+  assert.equal((await r.json()).promos[0].code, "BIENVENUE10");
+});
+await test("panier : code valide (minuscules acceptées) → remise calculée par le serveur", async () => {
+  const d = await (await promoFn(req("/promo", "POST", { code: " bienvenue10 ", items: polo() }))).json();
+  assert.equal(d.discount, 1190);
+});
+await test("panier : codes expiré, inactif, inconnu, hors catégorie, sous le minimum → refusés", async () => {
+  for (const [code, items, msg] of [["ETE2020", polo(), /expiré/], ["PAUSE", polo(), /existe pas/], ["NIMPORTE", polo(), /existe pas/], ["CASQUETTE", polo(), /aucun article/], ["GROSPANIER", polo(), /dès 200/]]) {
+    const r = await promoFn(req("/promo", "POST", { code, items }));
+    assert.equal(r.status, 400, code);
+    assert.match((await r.json()).error, msg, code);
+  }
+});
+await test("paiement : remise transmise à Stripe et seuil de livraison offerte après remise", async () => {
+  const s = await buildSession({ items: polo("M", 1), zone: "metro", promo: "bienvenue10" }, "https://x.fr");
+  assert.equal(s.discount, 1190);
+  assert.equal(s.params.metadata.promo_code, "BIENVENUE10");
+  // 119 € - 11,90 € = 107,10 € ≥ 90 € (seuil modifié plus haut) → livraison offerte
+  assert.equal(s.params.shipping_options[0].shipping_rate_data.fixed_amount.amount, 0);
+});
+await test("paiement : code « livraison offerte » en DOM-TOM", async () => {
+  const s = await buildSession({ items: polo("M", 1), zone: "domtom", promo: "PORTOFFERT" }, "https://x.fr");
+  assert.equal(s.discount, 0);
+  assert.equal(s.params.shipping_options[0].shipping_rate_data.fixed_amount.amount, 0);
+  assert.match(s.params.shipping_options[0].shipping_rate_data.display_name, /PORTOFFERT/);
+});
+await test("paiement : code invalide → la commande est refusée avec le motif", async () => {
+  const s = await buildSession({ items: polo(), zone: "metro", promo: "ETE2020" }, "https://x.fr");
+  assert.match(s.error, /expiré/);
+});
+await test("paiement confirmé → utilisation comptée ; limite atteinte → code refusé", async () => {
+  const { params } = await buildSession({ items: polo("S", 1), zone: "metro", promo: "MOINS20" }, "https://x.fr");
+  assert.ok(params, "MOINS20 accepté (119 € ≥ 100 €)");
+  const r = await webhookMod.default(signed({ type: "checkout.session.completed", data: { object: { id: "cs_promo_1", created: Math.floor(Date.now() / 1000), payment_status: "paid", amount_total: 9900, metadata: params.metadata, customer_details: { name: "A", email: "a@b.fr" } } } }));
+  assert.equal(r.status, 200);
+  const list = (await (await adminPromos(req("/admin/promos", "GET", undefined, auth()))).json()).promos;
+  assert.equal(list.find((p) => p.code === "MOINS20").uses, 1);
+  const again = await promoFn(req("/promo", "POST", { code: "MOINS20", items: polo() }));
+  assert.match((await again.json()).error, /maximum/);
+});
+await test("l'admin ne peut pas trafiquer le compteur (sauf remise à zéro explicite)", async () => {
+  const list = (await (await adminPromos(req("/admin/promos", "GET", undefined, auth()))).json()).promos;
+  list.find((p) => p.code === "MOINS20").uses = 0;
+  let saved = (await (await adminPromos(req("/admin/promos", "PUT", { promos: list }, auth()))).json()).promos;
+  assert.equal(saved.find((p) => p.code === "MOINS20").uses, 1);
+  saved.find((p) => p.code === "MOINS20").reset_uses = true;
+  saved = (await (await adminPromos(req("/admin/promos", "PUT", { promos: saved }, auth()))).json()).promos;
+  assert.equal(saved.find((p) => p.code === "MOINS20").uses, 0);
+});
+
+console.log("Suivi des commandes");
+await test("commande : statut, numéro de suivi et note enregistrés", async () => {
+  const r = await orders(req("/admin/orders", "PATCH", { id: "cs_promo_1", statut: "expediee", suivi: "6a 1234 5678 901", note: "Colis déposé" }, auth()));
+  assert.equal(r.status, 200);
+  const o = (await r.json()).order;
+  assert.equal(o.statut, "expediee");
+  assert.equal(o.suivi, "6A12345678901");
+  assert.equal(o.promo, "MOINS20");
+});
+await test("commande : statut ou numéro de suivi invalide refusé", async () => {
+  assert.equal((await orders(req("/admin/orders", "PATCH", { id: "cs_promo_1", statut: "volee" }, auth()))).status, 400);
+  assert.equal((await orders(req("/admin/orders", "PATCH", { id: "cs_promo_1", suivi: "<script>" }, auth()))).status, 400);
+  assert.equal((await orders(req("/admin/orders", "PATCH", { id: "inconnue", statut: "livree" }, auth()))).status, 404);
+});
+
+console.log("Avis clients");
+const reviewFn = (await import("../netlify/functions/review.mjs")).default;
+const adminReviews = (await import("../netlify/functions/admin-reviews.mjs")).default;
+const { publicReviews, getReviews } = await import("../netlify/lib/reviews.mjs");
+const ctx = (ip) => ({ ip });
+const avis = (extra = {}) => ({ slug: "polo-dune-du-pyla", name: "Marc", rating: 5, text: "Superbe broderie, taille parfaite.", consent: "1", ...extra });
+await test("avis incomplets refusés (note, texte, consentement, produit)", async () => {
+  for (const bad of [avis({ rating: 0 }), avis({ text: "court" }), avis({ consent: "" }), avis({ slug: "inconnu" }), avis({ email: "pas-un-mail" })]) {
+    assert.equal((await reviewFn(req("/reviews", "POST", bad), ctx("1.1.1.1"))).status, 400, JSON.stringify(bad));
+  }
+});
+await test("robot (champ piège rempli) : ignoré sans erreur", async () => {
+  const r = await reviewFn(req("/reviews", "POST", avis({ website: "http://spam" })), ctx("2.2.2.2"));
+  assert.equal(r.status, 200);
+  assert.equal((await getReviews()).length, 0);
+});
+await test("avis déposé → en attente ; « Achat vérifié » si l'e-mail a commandé ce produit", async () => {
+  assert.equal((await reviewFn(req("/reviews", "POST", avis({ email: "A@B.FR" })), ctx("3.3.3.3"))).status, 200);
+  assert.equal((await reviewFn(req("/reviews", "POST", avis({ name: "Julie", email: "autre@x.fr", rating: 4 })), ctx("3.3.3.3"))).status, 200);
+  const list = await getReviews();
+  assert.equal(list.length, 2);
+  assert.ok(list.every((r) => r.status === "pending"));
+  assert.equal(list.find((r) => r.name === "Marc").verified, true, "a@b.fr a commandé le polo (commande cs_promo_1)");
+  assert.equal(list.find((r) => r.name === "Julie").verified, false);
+});
+await test("anti-spam : plus de 3 avis par heure depuis la même adresse → refusé", async () => {
+  await reviewFn(req("/reviews", "POST", avis()), ctx("3.3.3.3"));
+  assert.equal((await reviewFn(req("/reviews", "POST", avis()), ctx("3.3.3.3"))).status, 429);
+});
+await test("modération : publication → mise en attente de publication ; l'e-mail n'est jamais public", async () => {
+  const list = (await (await adminReviews(req("/admin/reviews", "GET", undefined, auth()))).json()).reviews;
+  const marc = list.find((r) => r.name === "Marc" && r.email);
+  const r = await adminReviews(req("/admin/reviews", "PATCH", { id: marc.id, status: "approved" }, auth()));
+  assert.ok((await r.json()).publish.pending.some((p) => p.what === "Avis clients"));
+  const pub = publicReviews(await getReviews());
+  assert.equal(pub["polo-dune-du-pyla"].length, 1);
+  assert.equal(pub["polo-dune-du-pyla"][0].verified, true);
+  assert.equal(JSON.stringify(pub).includes("@"), false, "aucun e-mail dans les avis publiés");
+});
+await test("modération : suppression d'un avis", async () => {
+  const list = (await (await adminReviews(req("/admin/reviews", "GET", undefined, auth()))).json()).reviews;
+  const julie = list.find((r) => r.name === "Julie");
+  assert.equal((await adminReviews(req("/admin/reviews", "DELETE", { id: julie.id }, auth()))).status, 200);
+  assert.equal((await getReviews()).some((r) => r.name === "Julie"), false);
+});
+
+console.log("Journal");
+await test("articles : adresse invalide ou en double refusée", async () => {
+  const c = (await (await adminContent(req("/admin/content", "GET", undefined, auth()))).json()).content;
+  const bad1 = structuredClone(c); bad1.journal[0].slug = "Mon Article !";
+  const bad2 = structuredClone(c); bad2.journal[1].slug = bad2.journal[0].slug;
+  assert.equal((await adminContent(req("/admin/content", "PUT", { content: bad1 }, auth()))).status, 400);
+  assert.equal((await adminContent(req("/admin/content", "PUT", { content: bad2 }, auth()))).status, 400);
+});
+await test("articles : nouvel article long (plus de 5 000 caractères) accepté", async () => {
+  const c = (await (await adminContent(req("/admin/content", "GET", undefined, auth()))).json()).content;
+  c.journal.push({ slug: "que-faire-a-arcachon", title: "Que faire à Arcachon ?", date: "2026-10-01", excerpt: "Nos adresses.", image: { src: "", alt: "" }, published: true, body: "Texte. ".repeat(1200) });
+  assert.equal((await adminContent(req("/admin/content", "PUT", { content: c }, auth()))).status, 200);
+});
+
 console.log("Suppression");
 await test("produit supprimé → son stock aussi", async () => {
   const c = structuredClone(catalog);

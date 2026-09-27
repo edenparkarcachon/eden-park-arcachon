@@ -72,9 +72,9 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === "/api/checkout" && req.method === "POST" && !process.env.STRIPE_SECRET_KEY) {
       const chunks = [];
       for await (const c of req) chunks.push(c);
-      const { params, error } = await buildSession(JSON.parse(Buffer.concat(chunks).toString() || "{}"), process.env.SITE_URL);
+      const { params, error, discount } = await buildSession(JSON.parse(Buffer.concat(chunks).toString() || "{}"), process.env.SITE_URL);
       if (error) { res.writeHead(400, { "Content-Type": "application/json" }).end(JSON.stringify({ error })); return; }
-      const total = params.line_items.reduce((s, l) => s + l.price_data.unit_amount * l.quantity, 0) + params.shipping_options[0].shipping_rate_data.fixed_amount.amount;
+      const total = params.line_items.reduce((s, l) => s + l.price_data.unit_amount * l.quantity, 0) + params.shipping_options[0].shipping_rate_data.fixed_amount.amount - (discount || 0);
       await applyOrder({
         id: `cs_local_${Date.now()}`, created: Math.floor(Date.now() / 1000), amount_total: total, payment_status: "paid", metadata: params.metadata,
         customer_details: { name: "Client test (local)", email: "test@example.com", phone: "+33600000000" },

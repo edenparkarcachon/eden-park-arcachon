@@ -9,6 +9,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import { getStock, setStock, variantKey } from "../lib/catalog.mjs";
 import { store } from "../lib/store.mjs";
 import { json } from "../lib/http.mjs";
+import { recordPromoUse } from "../lib/promos.mjs";
 
 const TOLERANCE_S = 300;
 
@@ -51,6 +52,8 @@ export async function applyOrder(session) {
     recorded.push({ ...it, stockAvant: before, surCommande: before !== null && it.qty > before });
   }
 
+  if (meta.promo_code) await recordPromoUse(meta.promo_code);
+
   const customer = session.customer_details || {};
   const shipping = session.shipping_details || session.collected_information?.shipping_details || null;
   await orders.setJSON(key, {
@@ -62,6 +65,12 @@ export async function applyOrder(session) {
     client: { nom: customer.name || shipping?.name || "", email: customer.email || "", telephone: customer.phone || "" },
     adresse: shipping?.address || null,
     articles: recorded,
+    promo: meta.promo_code || null,
+    remise: parseInt(meta.remise, 10) || 0,
+    // suivi de la commande dans l'admin
+    statut: "a_preparer",
+    suivi: "",
+    note: "",
   });
   return { ok: true, items: recorded };
 }

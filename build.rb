@@ -30,6 +30,9 @@ TODAY    = Date.today.iso8601
 # Stock synchronisé depuis l'admin (scripts/sync-catalog.mjs) ; absent en local
 STOCK_FILE = File.join(ROOT, "data/stock.json")
 STOCK = File.exist?(STOCK_FILE) ? JSON.parse(File.read(STOCK_FILE)) : {}
+# Avis clients publiés (modérés dans l'admin), par produit
+REVIEWS_FILE = File.join(ROOT, "data/reviews.json")
+REVIEWS = File.exist?(REVIEWS_FILE) ? JSON.parse(File.read(REVIEWS_FILE)) : {}
 # Textes et photos des pages (modifiables depuis l'admin, onglet Pages & photos)
 CONTENT = JSON.parse(File.read(File.join(ROOT, "data/content.json")))
 
@@ -185,10 +188,24 @@ def product_images(p)
   p["images"].each_with_index.map { |img, i| image_info(img, p, i) }
 end
 
+# Sur Netlify, les photos passent par le service d'images (Netlify Image CDN) : format moderne
+# (AVIF/WebP selon le navigateur) et largeur adaptée à l'écran. En local, JPEG d'origine.
+IMAGE_CDN = ENV["NETLIFY"] == "true"
+CDN_WIDTHS = [360, 540, 720, 1080, 1440].freeze
+
+def cdn(src, width)
+  "/.netlify/images?url=#{CGI.escape(src)}&amp;w=#{width}&amp;q=76"
+end
+
 def img_tag(info, sizes: "(max-width: 760px) 50vw, 25vw", cls: nil, loading: "lazy", priority: false, alt: nil)
   a = h(alt.nil? ? info["alt"] : alt)
   c = cls ? %( class="#{cls}") : ""
   load = priority ? %( fetchpriority="high") : %( loading="#{loading}")
+  if IMAGE_CDN && info["src"].end_with?(".jpg")
+    widths = CDN_WIDTHS.select { |w| w < info["w"] } + [info["w"]]
+    srcset = widths.map { |w| "#{cdn(info['src'], w)} #{w}w" }.join(", ")
+    return %(<img src="#{cdn(info['src'], [720, info['w']].min)}" srcset="#{srcset}" sizes="#{sizes}" width="#{info['w']}" height="#{info['h']}" alt="#{a}"#{c}#{load} decoding="async">)
+  end
   if info["src720"]
     small_w = (info["w"] * 720.0 / [info["w"], info["h"]].max).round
     %(<img src="#{info['src']}" srcset="#{info['src720']} #{small_w}w, #{info['src']} #{info['w']}w" sizes="#{sizes}" width="#{info['w']}" height="#{info['h']}" alt="#{a}"#{c}#{load} decoding="async">)
@@ -212,6 +229,62 @@ def category_image(c)
   return image_info({ "src" => c["image"], "alt" => "" }) unless c["image"].to_s.empty?
   p = PRODUCTS.find { |x| x["category"] == c["slug"] && !x["images"].empty? }
   p && product_images(p).first
+end
+
+# « Mots magiques » utilisables dans les textes de l'admin (FAQ, bandeau…),
+# remplacés par les valeurs des Réglages
+def tokens(text)
+  s = SITE["shipping"]
+  map = {
+    "telephone" => SITE["phone"], "email" => SITE["email"],
+    "prix_livraison" => euro(s["metro_price"]), "livraison_offerte" => euro(s["free_threshold"]),
+    "prix_domtom" => euro(s["domtom_price"]), "delai_france" => s["metro_delay"], "delai_domtom" => s["domtom_delay"],
+    "delai_retour" => SITE["return_days"].to_s, "delai_sur_commande" => (s["backorder_days"] || 15).to_s
+  }
+  text.to_s.gsub(/\{([a-z_]+)\}/) { map.key?($1) ? map[$1].to_s : $& }
+end
+
+def slugify(s)
+  s.to_s.unicode_normalize(:nfd).gsub(/\p{Mn}/, "").downcase.gsub(/[^a-z0-9]+/, "-").gsub(/\A-|-\z/, "")
+end
+
+# Mise en forme simple des articles du Journal (saisis dans l'admin) :
+#   ligne vide = nouveau paragraphe, « ## » = intertitre, « - » = liste,
+#   **gras**, [texte du lien](/page/ ou https://…)
+def inline_md(str)
+  h(str)
+    .gsub(/\*\*(.+?)\*\*/) { "<strong>#{$1}</strong>" }
+    .gsub(/\[([^\]]+)\]\((\/[^\s)]*|https:\/\/[^\s)]+)\)/) do
+      ext = $2.start_with?("https://") ? %( target="_blank" rel="noopener") : ""
+      %(<a href="#{$2}"#{ext}>#{$1}</a>)
+    end
+end
+
+def rich_text(text)
+  tokens(text).split(/\n\s*\n/).map do |block|
+    lines = block.strip.split("\n").map(&:strip)
+    if lines.first.to_s.start_with?("## ")
+      "<h2>#{inline_md(lines.first[3..-1])}</h2>" + (lines.size > 1 ? "<p>#{lines[1..-1].map { |l| inline_md(l) }.join('<br>')}</p>" : "")
+    elsif lines.all? { |l| l.start_with?("- ") }
+      "<ul>#{lines.map { |l| "<li>#{inline_md(l[2..-1])}</li>" }.join}</ul>"
+    else
+      "<p>#{lines.map { |l| inline_md(l) }.join('<br>')}</p>"
+    end
+  end.join("\n")
+end
+
+def journal_articles
+  (CONTENT["journal"] || []).select { |a| a["published"] != false && !a["slug"].to_s.empty? }.sort_by { |a| a["date"].to_s }.reverse
+end
+
+def article_url(a)
+  "/journal/#{a['slug']}/"
+end
+
+def date_fr(iso)
+  mois = %w[janvier février mars avril mai juin juillet août septembre octobre novembre décembre]
+  d = Date.parse(iso.to_s) rescue nil
+  d ? "#{d.day} #{mois[d.month - 1]} #{d.year}" : ""
 end
 
 def paragraphs(text)
@@ -341,8 +414,31 @@ def return_policy
     "returnFees" => "https://schema.org/FreeReturn" }
 end
 
+def reviews_for(p)
+  REVIEWS[p["slug"]] || []
+end
+
+def rating_of(p)
+  list = reviews_for(p)
+  return nil if list.empty?
+  (list.sum { |r| r["rating"] } / list.size.to_f).round(1)
+end
+
+def stars(value, cls: "stars")
+  full = value.to_f.round
+  %(<span class="#{cls}" aria-hidden="true">#{'★' * full}#{'☆' * (5 - full)}</span>)
+end
+
 def product_schema(p)
   imgs = product_images(p).reject { |i| i["placeholder"] }.map { |i| abs_url(i["src"]) }
+  list = reviews_for(p)
+  rating_data = list.empty? ? {} : {
+    "aggregateRating" => { "@type" => "AggregateRating", "ratingValue" => rating_of(p), "reviewCount" => list.size, "bestRating" => 5, "worstRating" => 1 },
+    "review" => list.first(10).map do |r|
+      { "@type" => "Review", "author" => { "@type" => "Person", "name" => r["name"] }, "datePublished" => r["date"],
+        "reviewBody" => r["text"], "reviewRating" => { "@type" => "Rating", "ratingValue" => r["rating"], "bestRating" => 5 } }
+    end
+  }
   {
     "@context" => "https://schema.org",
     "@type" => "Product",
@@ -365,7 +461,7 @@ def product_schema(p)
       "shippingDetails" => shipping_details,
       "hasMerchantReturnPolicy" => return_policy
     }
-  }.reject { |_, v| v.nil? }
+  }.merge(rating_data).reject { |_, v| v.nil? }
 end
 
 # Vrai si toutes les variantes sont suivies et épuisées (vente « sur commande » uniquement)
@@ -671,6 +767,37 @@ simple_pages.each do |path, tpl, title, desc, crumb, image|
   write_page(ctx, tpl)
 end
 
+# Journal (articles saisis dans l'admin)
+journal_crumbs = [crumb_home, ["Le Journal", "/journal/"]]
+write_page(PageContext.new(
+  path: "/journal/",
+  title: "Le Journal – Conseils, coulisses et Bassin d'Arcachon | Eden Park Arcachon",
+  description: tokens((CONTENT["journal_intro"] || {})["lead"]).to_s[0, 160],
+  crumbs: journal_crumbs,
+  schemas: [breadcrumb_schema(journal_crumbs)]
+), "pages/journal.erb")
+journal_articles.each do |a|
+  crumbs = journal_crumbs + [[a["title"], article_url(a)]]
+  img = a["image"] && !a["image"]["src"].to_s.empty? ? "/assets/img/#{a['image']['src']}" : nil
+  article_schema = {
+    "@context" => "https://schema.org", "@type" => "BlogPosting", "headline" => a["title"], "description" => tokens(a["excerpt"]),
+    "datePublished" => a["date"], "dateModified" => a["date"], "inLanguage" => "fr-FR", "mainEntityOfPage" => abs_url(article_url(a)),
+    "image" => img ? abs_url(img) : nil,
+    "author" => { "@type" => "Organization", "name" => SITE["name"], "url" => abs_url("/") },
+    "publisher" => { "@type" => "Organization", "name" => SITE["name"], "logo" => { "@type" => "ImageObject", "url" => abs_url("/assets/img/logo-eden-park-arcachon.png") } }
+  }.reject { |_, v| v.nil? }
+  write_page(PageContext.new(
+    path: article_url(a),
+    title: "#{a['title']} | Eden Park Arcachon",
+    description: tokens(a["excerpt"]).to_s[0, 160],
+    image: img,
+    og_type: "article",
+    crumbs: crumbs,
+    schemas: [breadcrumb_schema(crumbs), article_schema],
+    locals: { "a" => a }
+  ), "pages/article.erb")
+end
+
 # Pages techniques (non indexées)
 write_page(PageContext.new(path: "/panier/", title: "Mon panier | Eden Park Arcachon", description: "Votre panier Eden Park Arcachon.", noindex: true), "pages/panier.erb")
 write_page(PageContext.new(path: "/merci/", title: "Merci pour votre commande | Eden Park Arcachon", description: "Confirmation de commande.", noindex: true), "pages/merci.erb")
@@ -689,6 +816,62 @@ File.write(File.join(DIST, "sitemap.xml"), <<~XML)
   <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   #{urls.join("\n")}
   </urlset>
+XML
+
+# Flux produits Google Merchant Center (fiches gratuites Google Shopping)
+GOOGLE_CATEGORIES = {
+  "casquettes-accessoires" => "Apparel & Accessories > Clothing Accessories > Hats"
+}.freeze
+def xml(s)
+  CGI.escapeHTML(s.to_s)
+end
+feed_items = PRODUCTS.flat_map do |p|
+  photos = product_images(p).reject { |i| i["placeholder"] }
+  next [] if photos.empty? # Google exige une vraie photo
+  stock = STOCK[p["slug"]] || {}
+  p["colors"].product(p["sizes"]).map do |c, sz|
+    q = stock["#{c['name']}|#{sz}"]
+    late = q.is_a?(Integer) && q <= 0
+    variant_photos = photos.select { |i| i["variant"].nil? || i["variant"] == c["name"] }
+    variant_photos = photos if variant_photos.empty?
+    plain = p["name"].gsub(/[«»]/, "").squeeze(" ").strip
+    s = SITE["shipping"]
+    <<~ITEM
+      <item>
+        <g:id>#{xml(slugify("#{p['slug']}-#{c['name']}-#{sz}"))}</g:id>
+        <g:item_group_id>#{xml(p['slug'])}</g:item_group_id>
+        <g:title>#{xml("#{plain} Eden Park – #{c['name']}#{sz == 'Taille unique' ? '' : " – taille #{sz}"}")}</g:title>
+        <g:description>#{xml(p['description'].join(' '))}</g:description>
+        <g:link>#{xml(abs_url(product_url(p)))}</g:link>
+        <g:image_link>#{xml(abs_url(variant_photos.first['src']))}</g:image_link>
+    #{variant_photos.drop(1).first(9).map { |i| "    <g:additional_image_link>#{xml(abs_url(i['src']))}</g:additional_image_link>" }.join("\n")}
+        <g:price>#{euro_plain(p['price'])} EUR</g:price>
+        <g:availability>#{late ? 'backorder' : 'in_stock'}</g:availability>
+    #{late ? "    <g:availability_date>#{(Date.today + (s['backorder_days'] || 15)).iso8601}T12:00+02:00</g:availability_date>" : ''}
+        <g:brand>Eden Park</g:brand>
+        <g:condition>new</g:condition>
+        <g:identifier_exists>no</g:identifier_exists>
+        <g:google_product_category>#{xml(GOOGLE_CATEGORIES[p['category']] || 'Apparel & Accessories > Clothing > Shirts & Tops')}</g:google_product_category>
+        <g:product_type>#{xml("Collection Bassin d'Arcachon > #{cat_by_slug(p['category'])['name']}")}</g:product_type>
+        <g:color>#{xml(c['name'])}</g:color>
+        <g:size>#{xml(sz == 'Taille unique' ? 'TU' : sz)}</g:size>
+        <g:gender>male</g:gender>
+        <g:age_group>adult</g:age_group>
+        <g:shipping><g:country>FR</g:country><g:service>Colissimo</g:service><g:price>#{euro_plain(p['price'] >= s['free_threshold'] ? 0 : s['metro_price'])} EUR</g:price></g:shipping>
+      </item>
+    ITEM
+  end
+end
+File.write(File.join(DIST, "google-merchant.xml"), <<~XML)
+  <?xml version="1.0" encoding="UTF-8"?>
+  <rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">
+  <channel>
+    <title>Eden Park Arcachon</title>
+    <link>#{abs_url('/')}</link>
+    <description>Collection exclusive Bassin d'Arcachon – boutique Eden Park d'Arcachon</description>
+  #{feed_items.join}
+  </channel>
+  </rss>
 XML
 
 File.write(File.join(DIST, "robots.txt"), <<~TXT)

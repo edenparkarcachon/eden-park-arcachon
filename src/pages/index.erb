@@ -129,6 +129,31 @@
   </div>
 </section>
 
+<% unless journal_articles.empty? -%>
+<section class="section section--sand" aria-labelledby="h-journal">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Conseils & coulisses</p>
+        <h2 id="h-journal"><%= h((CONTENT['journal_intro'] || {})['title'] || 'Le Journal') %></h2>
+      </div>
+      <a class="link-arrow" href="/journal/">Tous les articles <%= icon('arrow') %></a>
+    </div>
+    <div class="posts posts--3">
+<% journal_articles.first(3).each do |a| -%>
+      <article class="post-card">
+        <a class="post-card__media" href="<%= article_url(a) %>" tabindex="-1" aria-hidden="true"><%= content_img(a['image'], sizes: '(max-width: 860px) 100vw, 33vw') %></a>
+        <div class="post-card__body">
+          <time datetime="<%= a['date'] %>"><%= date_fr(a['date']) %></time>
+          <h3><a href="<%= article_url(a) %>"><%= h(a['title']) %></a></h3>
+        </div>
+      </article>
+<% end -%>
+    </div>
+  </div>
+</section>
+<% end -%>
+
 <% ig = hm['instagram'] -%>
 <section class="section" aria-labelledby="h-insta">
   <div class="wrap">

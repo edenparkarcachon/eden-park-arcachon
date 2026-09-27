@@ -15,7 +15,7 @@ export function checkTree(value, path = "") {
     for (const [k, v] of Object.entries(value)) {
       if (k === "src" && v !== "" && v != null && !IMG_RE.test(String(v))) return `Photo invalide (${path}.${k})`;
       if (/link$/.test(k) && v && !LINK_RE.test(String(v))) return `Lien invalide : « ${v} » (doit commencer par / ou https://)`;
-      if (typeof v === "string" && v.length > 5000) return `Texte trop long (${path}.${k})`;
+      if (typeof v === "string" && v.length > (k === "body" ? 40000 : 5000)) return `Texte trop long (${path}.${k})`;
       const e = checkTree(v, `${path}.${k}`);
       if (e) return e;
     }
@@ -86,6 +86,17 @@ export function checkContent(content, reference) {
     if (k.startsWith("_")) continue;
     if (!(k in content)) return `Rubrique manquante : ${k}`;
     if (Array.isArray(reference[k]) !== Array.isArray(content[k])) return `Format invalide : ${k}`;
+  }
+  if (content.journal !== undefined) {
+    if (!Array.isArray(content.journal)) return "Journal invalide";
+    const slugs = new Set();
+    for (const a of content.journal) {
+      if (!a.title || !String(a.title).trim()) return "Un article du Journal n'a pas de titre";
+      if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(a.slug || "")) return `Adresse invalide pour l'article « ${a.title} »`;
+      if (slugs.has(a.slug)) return `Deux articles utilisent l'adresse « ${a.slug} »`;
+      slugs.add(a.slug);
+      if (a.date && !/^\d{4}-\d{2}-\d{2}$/.test(a.date)) return `Date invalide pour l'article « ${a.title} »`;
+    }
   }
   return checkTree(content);
 }

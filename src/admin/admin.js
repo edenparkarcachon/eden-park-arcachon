@@ -64,7 +64,8 @@
   function start() {
     $('#login').hidden = true;
     $('#app').hidden = false;
-    load().then(function () { showTab('products'); });
+    load().then(function () { showTab('products'); loadOrders(); loadReviews(); });
+    loadPublish();
     fetch('/api/stock').then(function (r) { return r.json(); }).then(function (d) {
       state.backorderDays = d.backorderDays || 15;
       $$('[data-bo-days]').forEach(function (el) { el.textContent = state.backorderDays; });
@@ -98,6 +99,8 @@
     if (name === 'pages') renderPages();
     if (name === 'categories') renderCategories();
     if (name === 'settings') renderSettings();
+    if (name === 'promos') renderPromos();
+    if (name === 'reviews') loadReviews();
     window.scrollTo(0, 0);
     return true;
   }
@@ -437,7 +440,8 @@
       state.catalog = catalog;
       state.stock = d.stock || state.stock;
       state.dirty = false;
-      toast(successMsg + (d.rebuilt ? ' Le site sera à jour dans 1 à 2 minutes.' : (state.rebuild ? '' : ' (mise à jour automatique du site non configurée)')));
+      if (d.publish) setPublish(d.publish);
+      toast(successMsg + ' Cliquez sur « Publier » quand vous avez terminé vos modifications.');
       return d;
     });
   }
@@ -518,30 +522,112 @@
     }).catch(function (ex) { toast(ex.message, true); btn.disabled = false; });
   });
 
-  /* ---------- Commandes ---------- */
+  /* ---------- Commandes : liste et suivi ---------- */
   var ZONES = { metro: 'Colissimo France', domtom: 'Colissimo DOM-TOM', retrait: 'Retrait en boutique' };
+  var STATUTS = [['a_preparer', 'À préparer'], ['prete', 'Prête en boutique'], ['expediee', 'Expédiée'], ['livree', 'Livrée / retirée'], ['annulee', 'Annulée']];
+  var statutLabel = function (s) { var x = STATUTS.filter(function (y) { return y[0] === s; })[0]; return x ? x[1] : s; };
+  var orderFilter = 'a_traiter';
+  var ordersCache = [];
+  var trackUrl = function (n) { return 'https://www.laposte.fr/outils/suivre-vos-envois?code=' + encodeURIComponent(n); };
+
+  // E-mail pré-rédigé pour prévenir le client (s'ouvre dans la messagerie de la boutique)
+  function mailtoFor(o) {
+    var prenom = (o.client.nom || '').split(' ')[0];
+    var hello = 'Bonjour' + (prenom ? ' ' + prenom : '') + ',\n\n';
+    var sign = '\n\nÀ très bientôt,\nL’équipe Eden Park Arcachon\n' + (state.site ? state.site.phone : '');
+    var subject, body;
+    if (o.statut === 'expediee') {
+      subject = 'Votre commande Eden Park Arcachon est en route';
+      body = hello + 'Bonne nouvelle : votre commande vient d’être expédiée en Colissimo.' +
+        (o.suivi ? '\n\nNuméro de suivi : ' + o.suivi + '\nSuivre votre colis : ' + trackUrl(o.suivi) : '') + sign;
+    } else if (o.statut === 'prete') {
+      subject = 'Votre commande Eden Park Arcachon vous attend en boutique';
+      body = hello + 'Votre commande est prête ! Vous pouvez la retirer à la boutique' +
+        (state.site ? ', ' + state.site.address.street + ' à ' + state.site.address.city : '') + ', aux horaires d’ouverture, sur présentation de votre e-mail de confirmation.' + sign;
+    } else {
+      subject = 'Votre commande Eden Park Arcachon';
+      body = hello + sign;
+    }
+    return 'mailto:' + encodeURIComponent(o.client.email || '') + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  }
+
+  function updateOrdersCount() {
+    var n = ordersCache.filter(function (o) { return o.statut === 'a_preparer'; }).length;
+    var c = $('#orders-count');
+    c.hidden = !n;
+    c.textContent = n;
+  }
+
+  function renderOrders() {
+    var box = $('#orders');
+    var filters = [['a_traiter', 'À traiter'], ['tout', 'Toutes']].concat(STATUTS);
+    var list = ordersCache.filter(function (o) {
+      if (orderFilter === 'tout') return true;
+      if (orderFilter === 'a_traiter') return o.statut === 'a_preparer' || o.statut === 'prete';
+      return o.statut === orderFilter;
+    });
+    var html = '<div class="order-filters">' + filters.map(function (f) {
+      var n = ordersCache.filter(function (o) { return f[0] === 'tout' || (f[0] === 'a_traiter' ? (o.statut === 'a_preparer' || o.statut === 'prete') : o.statut === f[0]); }).length;
+      return '<button type="button" data-filter="' + f[0] + '" aria-current="' + (orderFilter === f[0]) + '">' + f[1] + ' (' + n + ')</button>';
+    }).join('') + '</div>';
+    if (!ordersCache.length) { box.innerHTML = '<p class="empty">Aucune commande pour le moment.</p>'; return; }
+    if (!list.length) { box.innerHTML = html + '<p class="empty">Aucune commande dans cette catégorie.</p>'; return; }
+    box.innerHTML = html + list.map(function (o) {
+      var date = new Date(o.date).toLocaleString('fr-FR', { dateStyle: 'medium', timeStyle: 'short' });
+      var items = o.articles.map(function (a) {
+        var p = state.catalog.products.filter(function (x) { return x.slug === a.slug; })[0];
+        return '<li>' + a.qty + ' × ' + esc(p ? p.name : a.slug) + ' – ' + esc(a.color) + (a.size !== 'Taille unique' ? ' – ' + esc(a.size) : '') +
+          (a.surCommande ? ' <span class="tag tag--late">sur commande</span>' : '') + '</li>';
+      }).join('');
+      var addr = o.adresse ? [o.adresse.line1, o.adresse.line2, (o.adresse.postal_code || '') + ' ' + (o.adresse.city || ''), o.adresse.country].filter(Boolean).map(esc).join(', ') : '';
+      var opts = STATUTS.map(function (s) { return '<option value="' + s[0] + '"' + (o.statut === s[0] ? ' selected' : '') + '>' + s[1] + '</option>'; }).join('');
+      var canNotify = o.client.email && (o.statut === 'expediee' || o.statut === 'prete');
+      return '<div class="order" data-order="' + esc(o.id) + '">' +
+        '<div><strong>' + esc(date) + '</strong><br><span class="st st--' + esc(o.statut) + '">' + esc(statutLabel(o.statut)) + '</span><br><span class="muted small">' + esc(ZONES[o.zone] || o.zone || '') + '</span>' +
+        (o.surCommande ? '<br><span class="tag tag--late">Délai ' + state.backorderDays + ' jours</span>' : '') + '</div>' +
+        '<div><strong>' + esc(o.client.nom) + '</strong> · <a href="mailto:' + esc(o.client.email) + '">' + esc(o.client.email) + '</a> ' + esc(o.client.telephone) +
+        (addr ? '<br><span class="muted small">' + addr + '</span>' : '') + '<ul>' + items + '</ul>' +
+        (o.promo ? '<span class="tag">Code ' + esc(o.promo) + (o.remise ? ' : −' + euro(o.remise) : '') + '</span>' : '') + '</div>' +
+        '<div class="order__total">' + euro(o.total || 0) + '</div>' +
+        '<div class="order__track">' +
+        '<label>Statut<select data-f="statut">' + opts + '</select></label>' +
+        (o.zone === 'retrait' ? '<span></span>' : '<label>N° de suivi Colissimo<input data-f="suivi" value="' + esc(o.suivi) + '" placeholder="ex. 6A12345678901"></label>') +
+        '<label>Note interne<input data-f="note" value="' + esc(o.note) + '" placeholder="ex. préparée par Léa"></label>' +
+        '<div class="order__actions"><button type="button" class="btn btn--sm" data-save-order>Enregistrer</button>' +
+        (canNotify ? '<a class="btn btn--ghost btn--sm" href="' + esc(mailtoFor(o)) + '">Prévenir le client ✉</a>' : '') +
+        (o.suivi ? '<a class="btn btn--ghost btn--sm" href="' + esc(trackUrl(o.suivi)) + '" target="_blank" rel="noopener">Suivi ↗</a>' : '') + '</div>' +
+        '</div></div>';
+    }).join('');
+  }
+
   function loadOrders() {
     var box = $('#orders');
-    box.innerHTML = '<p class="muted">Chargement…</p>';
-    api('GET', '/api/admin/orders').then(function (d) {
-      if (!d.orders.length) { box.innerHTML = '<p class="empty">Aucune commande pour le moment.</p>'; return; }
-      box.innerHTML = d.orders.map(function (o) {
-        var date = new Date(o.date).toLocaleString('fr-FR', { dateStyle: 'medium', timeStyle: 'short' });
-        var items = o.articles.map(function (a) {
-          var p = state.catalog.products.filter(function (x) { return x.slug === a.slug; })[0];
-          return '<li>' + a.qty + ' × ' + esc(p ? p.name : a.slug) + ' – ' + esc(a.color) + (a.size !== 'Taille unique' ? ' – ' + esc(a.size) : '') +
-            (a.surCommande ? ' <span class="tag tag--late">sur commande</span>' : '') + '</li>';
-        }).join('');
-        var addr = o.adresse ? [o.adresse.line1, o.adresse.line2, (o.adresse.postal_code || '') + ' ' + (o.adresse.city || ''), o.adresse.country].filter(Boolean).map(esc).join(', ') : '';
-        return '<div class="order"><div><strong>' + esc(date) + '</strong><br><span class="muted small">' + esc(ZONES[o.zone] || o.zone || '') + '</span>' +
-          (o.surCommande ? '<br><span class="tag tag--late">Délai ' + state.backorderDays + ' jours</span>' : '') + '</div>' +
-          '<div><strong>' + esc(o.client.nom) + '</strong> · <a href="mailto:' + esc(o.client.email) + '">' + esc(o.client.email) + '</a> ' + esc(o.client.telephone) +
-          (addr ? '<br><span class="muted small">' + addr + '</span>' : '') + '<ul>' + items + '</ul></div>' +
-          '<div class="order__total">' + euro(o.total || 0) + '</div></div>';
-      }).join('');
+    if (!ordersCache.length) box.innerHTML = '<p class="muted">Chargement…</p>';
+    return api('GET', '/api/admin/orders').then(function (d) {
+      ordersCache = d.orders;
+      updateOrdersCount();
+      renderOrders();
     }).catch(function (ex) { box.innerHTML = '<p class="error">' + esc(ex.message) + '</p>'; });
   }
   $('#refresh-orders').addEventListener('click', loadOrders);
+  $('#orders').addEventListener('click', function (e) {
+    var f = e.target.closest('[data-filter]');
+    if (f) { orderFilter = f.getAttribute('data-filter'); renderOrders(); return; }
+    var b = e.target.closest('[data-save-order]');
+    if (!b) return;
+    var card = b.closest('[data-order]');
+    var body = { id: card.getAttribute('data-order') };
+    $$('[data-f]', card).forEach(function (inp) { body[inp.getAttribute('data-f')] = inp.value; });
+    if (body.statut === 'expediee' && !body.suivi && !confirm('Aucun numéro de suivi saisi. Enregistrer quand même ?')) return;
+    b.disabled = true;
+    api('PATCH', '/api/admin/orders', body).then(function (d) {
+      ordersCache = ordersCache.map(function (o) { return o.id === d.order.id ? d.order : o; });
+      updateOrdersCount();
+      renderOrders();
+      var canNotify = d.order.client.email && (d.order.statut === 'expediee' || d.order.statut === 'prete');
+      toast('Commande mise à jour.' + (canNotify ? ' Cliquez sur « Prévenir le client » pour lui envoyer un e-mail.' : ''));
+    }).catch(function (ex) { toast(ex.message, true); b.disabled = false; });
+  });
 
   /* =====================================================================
      Médiathèque : choisir une photo existante ou en envoyer une nouvelle
@@ -648,6 +734,27 @@
         input.value = typeof val === 'number' ? val : '';
         input.addEventListener('input', function () { obj[def.k] = parseInt(input.value, 10) || 0; markDirty(); });
         break;
+      case 'bool':
+        input = el('input', { id: id, type: 'checkbox' });
+        input.checked = !!val;
+        input.addEventListener('change', function () { obj[def.k] = input.checked; markDirty(); });
+        var row = el('label', { class: 'check', for: id }, [input, el('span', { text: def.label })]);
+        return el('div', { class: 'field' }, def.help ? [row, el('small', { text: def.help })] : [row]);
+      case 'checks':
+        if (!Array.isArray(obj[def.k])) obj[def.k] = [];
+        var group = el('div', { class: 'chips' });
+        (typeof def.options === 'function' ? def.options() : def.options).forEach(function (o) {
+          var cb = el('input', { type: 'checkbox', value: o[0] });
+          cb.checked = obj[def.k].indexOf(o[0]) > -1;
+          cb.addEventListener('change', function () {
+            obj[def.k] = $$('input', group).filter(function (x) { return x.checked; }).map(function (x) { return x.value; });
+            markDirty();
+          });
+          group.appendChild(el('label', { class: 'chip' }, [cb, el('span', { text: o[1] })]));
+        });
+        var fc = el('div', { class: 'field' }, [el('label', { text: def.label }), group]);
+        if (def.help) fc.appendChild(el('small', { text: def.help }));
+        return fc;
       case 'select':
         input = el('select', { id: id });
         def.options.forEach(function (o) { input.appendChild(el('option', { value: o[0], text: o[1] })); });
@@ -746,6 +853,7 @@
 
   /* ---------- Pages & photos ---------- */
   var IMG = function (k, label) { return { k: k, type: 'image', label: label || 'Photo' }; };
+  var TOKENS_HELP = 'Astuce : ces mots entre accolades sont remplacés automatiquement par les valeurs des Réglages : {livraison_offerte}, {prix_livraison}, {prix_domtom}, {delai_france}, {delai_domtom}, {delai_retour}, {delai_sur_commande}, {telephone}, {email}.';
   var LOOK = [IMG('__self', 'Photo'), { k: 'title', label: 'Titre (sur la photo)' }, { k: 'subtitle', label: 'Sous-titre' }];
   var PAGES = [
     { id: 'home', label: 'Accueil', root: 'home', fields: [
@@ -794,8 +902,36 @@
       { type: 'list', k: 'services', label: 'Services en boutique', itemLabel: 'Service', max: 6, addLabel: 'Ajouter un service', template: { title: '', text: '' },
         fields: [{ k: 'title', label: 'Titre' }, { k: 'text', type: 'textarea', label: 'Texte', rows: 2 }] }
     ] },
+    { id: 'faq', label: 'FAQ', root: 'faq', fields: [
+      { type: 'group', label: 'En-tête', help: TOKENS_HELP, fields: [{ k: 'title', label: 'Titre' }, { k: 'lead', type: 'textarea', label: 'Introduction', rows: 2 }] },
+      { type: 'group', label: 'Guide des tailles', fields: [{ k: 'size_intro', type: 'textarea', label: 'Texte avant le tableau', rows: 3 }, { k: 'size_note', type: 'textarea', label: 'Texte après le tableau', rows: 2 }] },
+      { type: 'list', k: 'sections', label: 'Rubriques et questions', itemLabel: 'Rubrique', addLabel: 'Ajouter une rubrique',
+        itemTitle: function (s) { return (s.title || 'Nouvelle rubrique') + ' · ' + (s.questions || []).length + ' question(s)'; },
+        template: { title: '', questions: [{ q: '', a: '' }] },
+        fields: [
+          { k: 'title', label: 'Nom de la rubrique' },
+          { type: 'list', k: 'questions', label: 'Questions', itemLabel: 'Question', addLabel: 'Ajouter une question', template: { q: '', a: '' },
+            itemTitle: function (x, i) { return (i + 1) + '. ' + (x.q ? x.q.slice(0, 70) : 'Nouvelle question'); },
+            fields: [{ k: 'q', label: 'Question' }, { k: 'a', type: 'textarea', label: 'Réponse', rows: 3 }] }
+        ] }
+    ] },
+    { id: 'journal', label: 'Journal (articles)', root: null, fields: [
+      { type: 'group', k: 'journal_intro', label: 'Page « Le Journal »', fields: [{ k: 'title', label: 'Titre' }, { k: 'lead', type: 'textarea', label: 'Introduction', rows: 2 }] },
+      { type: 'list', k: 'journal', label: 'Articles', itemLabel: 'Article', addLabel: 'Écrire un nouvel article',
+        itemTitle: function (a) { return (a.title || 'Nouvel article') + (a.published === false ? ' · brouillon' : '') + (a.date ? ' · ' + a.date : ''); },
+        template: { slug: '', title: '', date: '', excerpt: '', image: { src: '', alt: '' }, published: false, body: '' },
+        fields: [
+          { k: 'title', label: 'Titre de l’article' },
+          { k: 'date', type: 'date', label: 'Date de publication' },
+          { k: 'published', type: 'bool', label: 'Publié (décoché = brouillon, invisible sur le site)' },
+          IMG('image', 'Photo principale'),
+          { k: 'excerpt', type: 'textarea', label: 'Résumé (affiché dans la liste et sur Google)', rows: 2 },
+          { k: 'body', type: 'textarea', label: 'Texte de l’article', rows: 16,
+            help: 'Mise en forme : laissez une ligne vide entre deux paragraphes. « ## Mon intertitre » pour un intertitre, « - » en début de ligne pour une liste, **texte** pour du gras, [texte du lien](/boutique/) pour un lien. Les mots magiques ({telephone}, {delai_retour}…) fonctionnent aussi.' }
+        ] }
+    ] },
     { id: 'general', label: 'Bandeau & pied de page', root: null, fields: [
-      { type: 'group', label: 'Bandeau d’annonce (tout en haut du site)', fields: [{ k: 'announcement', type: 'lines', label: 'Messages (un par ligne, 3 maximum conseillés)', help: 'Pensez à mettre ce bandeau à jour si vous changez les tarifs de livraison ou le délai de retour dans Réglages.' }] },
+      { type: 'group', label: 'Bandeau d’annonce (tout en haut du site)', fields: [{ k: 'announcement', type: 'lines', label: 'Messages (un par ligne, 3 maximum conseillés)', help: TOKENS_HELP }] },
       { type: 'group', label: 'Pied de page', fields: [{ k: 'footer_text', type: 'textarea', label: 'Texte de présentation' }] }
     ] }
   ];
@@ -954,12 +1090,109 @@
     box.appendChild(grid);
   }
 
-  /* ---------- Enregistrement des trois onglets ---------- */
+  /* ---------- Avis clients ---------- */
+  var REVIEW_STATUS = { pending: 'À valider', approved: 'Publié', rejected: 'Masqué' };
+  var reviewsCache = [];
+  function updateReviewsCount() {
+    var n = reviewsCache.filter(function (r) { return r.status === 'pending'; }).length;
+    var c = $('#reviews-count');
+    c.hidden = !n;
+    c.textContent = n;
+  }
+  function renderReviews() {
+    var box = $('#reviews');
+    if (!reviewsCache.length) { box.innerHTML = '<p class="empty">Aucun avis pour le moment. Ils apparaîtront ici dès qu’un client en déposera un sur une fiche produit.</p>'; return; }
+    box.innerHTML = reviewsCache.map(function (r) {
+      var p = state.catalog.products.filter(function (x) { return x.slug === r.slug; })[0];
+      var date = new Date(r.date).toLocaleString('fr-FR', { dateStyle: 'medium', timeStyle: 'short' });
+      var btns = [];
+      if (r.status !== 'approved') btns.push('<button type="button" class="btn btn--sm" data-review="approved">Publier</button>');
+      if (r.status !== 'rejected') btns.push('<button type="button" class="btn btn--ghost btn--sm" data-review="rejected">Masquer</button>');
+      btns.push('<button type="button" class="btn btn--ghost btn--sm danger" data-review="delete">Supprimer</button>');
+      return '<div class="order" data-review-id="' + esc(r.id) + '"><div><strong>' + esc(date) + '</strong><br><span class="st st--' + (r.status === 'approved' ? 'livree' : r.status === 'pending' ? 'a_preparer' : 'annulee') + '">' + REVIEW_STATUS[r.status] + '</span></div>' +
+        '<div><strong>' + esc(p ? p.name : r.slug) + '</strong><br><span class="stars" style="color:#c99a2e">' + '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating) + '</span> · ' + esc(r.name) +
+        (r.verified ? ' <span class="tag tag--ok">Achat vérifié</span>' : '') + (r.email ? ' <span class="muted small">(' + esc(r.email) + ')</span>' : '') +
+        '<p style="margin:8px 0 0;white-space:pre-line">' + esc(r.text) + '</p></div>' +
+        '<div class="order__actions" style="align-self:start">' + btns.join('') + '</div></div>';
+    }).join('');
+  }
+  function loadReviews() {
+    return api('GET', '/api/admin/reviews').then(function (d) { reviewsCache = d.reviews; updateReviewsCount(); renderReviews(); })
+      .catch(function (ex) { $('#reviews').innerHTML = '<p class="error">' + esc(ex.message) + '</p>'; });
+  }
+  $('#refresh-reviews').addEventListener('click', loadReviews);
+  $('#reviews').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-review]');
+    if (!b) return;
+    var id = b.closest('[data-review-id]').getAttribute('data-review-id');
+    var action = b.getAttribute('data-review');
+    if (action === 'delete' && !confirm('Supprimer définitivement cet avis ?')) return;
+    b.disabled = true;
+    var call = action === 'delete' ? api('DELETE', '/api/admin/reviews', { id: id }) : api('PATCH', '/api/admin/reviews', { id: id, status: action });
+    call.then(function (d) {
+      if (d.publish) setPublish(d.publish);
+      toast(action === 'approved' ? 'Avis validé : il sera visible sur le site après « Publier ».' : action === 'delete' ? 'Avis supprimé.' : 'Avis masqué.');
+      return loadReviews();
+    }).catch(function (ex) { toast(ex.message, true); b.disabled = false; });
+  });
+
+  /* ---------- Codes promo ---------- */
+  var PROMO_FIELDS = [
+    { k: 'code', label: 'Code (ce que le client saisit)', placeholder: 'ex. BIENVENUE10', help: 'Lettres, chiffres ou tirets. Majuscules et minuscules sont équivalentes.' },
+    { k: 'type', type: 'select', label: 'Type de réduction', options: [['percent', 'Pourcentage (%)'], ['amount', 'Montant fixe (€)'], ['shipping', 'Livraison offerte']] },
+    { k: 'percent', type: 'int', min: 1, label: 'Pourcentage (si type « Pourcentage »)' },
+    { k: 'amount', type: 'euro', label: 'Montant en € (si type « Montant fixe »)' },
+    { k: 'min_order', type: 'euro', label: 'Montant minimum du panier (€, 0 = aucun)' },
+    { k: 'starts', type: 'date', label: 'Valable à partir du (facultatif)' },
+    { k: 'ends', type: 'date', label: 'Valable jusqu’au (inclus, facultatif)' },
+    { k: 'max_uses', type: 'int', label: 'Nombre d’utilisations maximum (0 = illimité)' },
+    { k: 'categories', type: 'checks', label: 'Limiter à certaines catégories', help: 'Aucune case cochée = tout le catalogue.',
+      options: function () { return state.catalog.categories.map(function (c) { return [c.slug, c.name]; }); } },
+    { k: 'note', label: 'Note interne (facultatif)', placeholder: 'ex. offert aux clients de la boutique' },
+    { k: 'active', type: 'bool', label: 'Code actif' },
+    { k: 'reset_uses', type: 'bool', label: 'Remettre le compteur d’utilisations à zéro' }
+  ];
+  function promoSummary(p) {
+    var what = p.type === 'percent' ? '-' + (p.percent || 0) + ' %' : p.type === 'amount' ? '-' + euro(p.amount || 0) : 'livraison offerte';
+    var uses = (p.uses || 0) + (p.max_uses ? '/' + p.max_uses : '') + ' utilisation' + ((p.uses || 0) > 1 ? 's' : '');
+    return (p.code || 'Nouveau code') + ' · ' + what + ' · ' + uses + (p.active === false ? ' · inactif' : '');
+  }
+  function renderPromos() {
+    var box = $('#promos-form');
+    box.innerHTML = '<p class="muted">Chargement…</p>';
+    api('GET', '/api/admin/promos').then(function (d) {
+      state.promos = d.promos;
+      state.promosDraft = JSON.parse(JSON.stringify(d.promos));
+      box.innerHTML = '';
+      var holder = { promos: state.promosDraft };
+      box.appendChild(listEl(holder, {
+        k: 'promos', label: '', addLabel: 'Créer un code promo', itemTitle: promoSummary,
+        template: { code: '', type: 'percent', percent: 10, amount: 0, min_order: 0, starts: '', ends: '', max_uses: 0, categories: [], note: '', active: true },
+        fields: PROMO_FIELDS
+      }));
+      if (!state.promosDraft.length) box.insertBefore(el('p', { class: 'empty', text: 'Aucun code promo pour l’instant. Exemple : BIENVENUE10 pour -10 % sur la première commande.' }), box.firstChild);
+    }).catch(function (ex) { box.innerHTML = '<p class="error">' + esc(ex.message) + '</p>'; });
+  }
+
+  /* ---------- Enregistrement des onglets (Pages, Catégories, Réglages, Codes promo) ---------- */
   $$('[data-save]').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var what = btn.getAttribute('data-save');
       var req;
-      if (what === 'pages') req = api('PUT', '/api/admin/content', { content: state.pagesDraft });
+      if (what === 'pages') {
+        // Journal : adresse et date remplies automatiquement pour les nouveaux articles
+        var arts = state.pagesDraft.journal || [];
+        for (var a = 0; a < arts.length; a++) {
+          if (!String(arts[a].title || '').trim()) { toast('Chaque article du Journal doit avoir un titre.', true); return; }
+          if (!arts[a].date) arts[a].date = new Date().toISOString().slice(0, 10);
+          if (!arts[a].slug) {
+            var sb = slugify(arts[a].title).slice(0, 70) || 'article', sl = sb, k = 2;
+            while (arts.some(function (x, j) { return j !== a && x.slug === sl; })) sl = sb + '-' + k++;
+            arts[a].slug = sl;
+          }
+        }
+        req = api('PUT', '/api/admin/content', { content: state.pagesDraft });
+      }
       if (what === 'settings') {
         var d = state.settingsDraft;
         d.geo = { lat: parseFloat(String(d.geo.lat).replace(',', '.')), lng: parseFloat(String(d.geo.lng).replace(',', '.')) };
@@ -981,19 +1214,56 @@
         }
         var catalog = JSON.parse(JSON.stringify(state.catalog));
         catalog.categories = cats;
-        req = api('PUT', '/api/admin/catalog', { catalog: catalog }).then(function (r) { state.catalog = catalog; return r; });
+        req = api('PUT', '/api/admin/catalog', { catalog: catalog, what: 'Catégories' }).then(function (r) { state.catalog = catalog; return r; });
+      }
+      if (what === 'promos') {
+        var bad = state.promosDraft.filter(function (p) { return !String(p.code || '').trim(); });
+        if (bad.length) { toast('Chaque code promo doit avoir un nom (ex. BIENVENUE10).', true); return; }
+        req = api('PUT', '/api/admin/promos', { promos: state.promosDraft }).then(function (r) { state.promos = r.promos; return r; });
       }
       btn.disabled = true;
       req.then(function (r) {
         if (r.site) state.site = r.site;
         if (r.content) state.content = r.content;
         state.dirty = false;
-        toast('Enregistré.' + (r.rebuilt ? ' Le site sera à jour dans 1 à 2 minutes.' : (state.rebuild ? '' : ' (mise à jour automatique du site non configurée)')));
+        if (r.publish) setPublish(r.publish);
+        toast(what === 'promos' ? 'Codes promo enregistrés : ils sont actifs immédiatement.' : 'Enregistré. Cliquez sur « Publier » quand vous avez terminé vos modifications.');
         if (what === 'categories') renderCategories();
         if (what === 'settings') renderSettings();
+        if (what === 'promos') renderPromos();
       }).catch(function (ex) { toast(ex.message, true); }).then(function () { btn.disabled = false; });
     });
   });
+
+  /* =====================================================================
+     Publication groupée (chaque mise en ligne consomme des crédits Netlify)
+     ===================================================================== */
+  function setPublish(p) {
+    state.publish = p;
+    var bar = $('#publishbar');
+    var pending = (p && p.pending) || [];
+    if (pending.length) {
+      bar.innerHTML = '<span class="dot dot--late"></span><span>' + pending.length + ' modification' + (pending.length > 1 ? 's' : '') +
+        ' à publier <small>(' + esc(pending.map(function (x) { return x.what; }).join(', ')) + ')</small></span>' +
+        '<button type="button" class="btn btn--sm" id="publish-btn">Publier les modifications</button>';
+    } else {
+      var when = p && p.lastPublished ? new Date(p.lastPublished).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }) : null;
+      bar.innerHTML = '<span class="dot dot--ok"></span><span>Site à jour' + (when ? ' <small>(publié le ' + esc(when) + ')</small>' : '') + '</span>';
+    }
+  }
+  $('#publishbar').addEventListener('click', function (e) {
+    if (e.target.id !== 'publish-btn') return;
+    if (state.dirty && !confirm('Certaines modifications de cet écran ne sont pas enregistrées et ne seront pas publiées. Continuer ?')) return;
+    e.target.disabled = true;
+    e.target.textContent = 'Publication…';
+    api('POST', '/api/admin/publish').then(function (p) {
+      setPublish(p);
+      toast('Publication lancée : le site sera à jour dans 1 à 2 minutes.');
+    }).catch(function (ex) { toast(ex.message, true); setPublish(state.publish); });
+  });
+  function loadPublish() {
+    return api('GET', '/api/admin/publish').then(setPublish).catch(function () {});
+  }
 
   /* ---------- Démarrage ---------- */
   if (token()) start(); else showLogin();

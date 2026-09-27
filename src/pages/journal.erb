@@ -1,0 +1,28 @@
+<% ji = CONTENT['journal_intro'] || {} -%>
+<header class="page-head">
+  <div class="wrap">
+    <p class="eyebrow">Eden Park Arcachon</p>
+    <h1><%= h(ji['title'] || 'Le Journal') %></h1>
+    <p class="lead"><%= h(tokens(ji['lead'])) %></p>
+  </div>
+</header>
+
+<section class="wrap" style="padding-bottom:90px">
+<% if journal_articles.empty? -%>
+  <p class="muted-text">Les premiers articles arrivent bientôt.</p>
+<% else -%>
+  <div class="posts">
+<% journal_articles.each_with_index do |a, i| -%>
+    <article class="post-card<%= i.zero? ? ' post-card--lead' : '' %>">
+      <a class="post-card__media" href="<%= article_url(a) %>" tabindex="-1" aria-hidden="true"><%= content_img(a['image'], sizes: i.zero? ? '(max-width: 860px) 100vw, 60vw' : '(max-width: 860px) 100vw, 33vw') %></a>
+      <div class="post-card__body">
+        <time datetime="<%= a['date'] %>"><%= date_fr(a['date']) %></time>
+        <h2><a href="<%= article_url(a) %>"><%= h(a['title']) %></a></h2>
+        <p><%= h(tokens(a['excerpt'])) %></p>
+        <a class="link-arrow" href="<%= article_url(a) %>">Lire l'article <%= icon('arrow') %></a>
+      </div>
+    </article>
+<% end -%>
+  </div>
+<% end -%>
+</section>

@@ -21,7 +21,16 @@
       </div>
     </fieldset>
     <div data-backorder-note></div>
+    <form class="promo" data-promo-form novalidate>
+      <label class="opt__label" for="promo-code" style="margin:6px 0 8px">Code promo</label>
+      <div class="promo__row">
+        <input id="promo-code" name="code" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Votre code">
+        <button class="btn btn--ghost" type="submit">Appliquer</button>
+      </div>
+      <p class="promo__msg" data-promo-msg aria-live="polite"></p>
+    </form>
     <div class="summary__row"><span>Sous-total</span><span data-subtotal>0 €</span></div>
+    <div class="summary__row summary__row--discount" data-discount-row hidden><span data-discount-label>Remise</span><span data-discount></span></div>
     <div class="summary__row"><span>Livraison</span><span data-shipping>–</span></div>
     <div class="summary__row summary__total"><span>Total TTC</span><span data-total>0 €</span></div>
     <label class="consent" for="cgv-ok"><input type="checkbox" id="cgv-ok" data-cgv> <span>J'ai lu et j'accepte les <a href="/cgv/" target="_blank">conditions générales de vente</a>.</span></label>

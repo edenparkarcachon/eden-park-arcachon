@@ -1,12 +1,13 @@
 // Espace admin : textes et photos des pages, et réglages de la boutique.
 //   GET /api/admin/content → { site, content, uploads }
-//   PUT /api/admin/content { settings?, content? } → enregistre puis relance la construction du site
+//   PUT /api/admin/content { settings?, content? } → enregistre (publication via /api/admin/publish)
 
 import bundledContent from "../../data/content.json" with { type: "json" };
 import { getSite, getSettings, saveSettings, getContent, saveContent, deepMerge } from "../lib/catalog.mjs";
 import { cleanSettings, checkContent } from "../lib/validate.mjs";
 import { store } from "../lib/store.mjs";
-import { json, isAuthorized, unauthorized, triggerRebuild } from "../lib/http.mjs";
+import { json, isAuthorized, unauthorized } from "../lib/http.mjs";
+import { markPending } from "../lib/publish.mjs";
 
 export default async (req) => {
   if (!isAuthorized(req)) return unauthorized();
@@ -32,8 +33,8 @@ export default async (req) => {
     if (error) return json(400, { error });
     await saveContent(body.content);
   }
-  const rebuilt = await triggerRebuild();
-  return json(200, { ok: true, rebuilt, site: await getSite(), content: await getContent() });
+  const publish = await markPending(body.settings ? "Réglages" : "Pages & photos");
+  return json(200, { ok: true, publish, site: await getSite(), content: await getContent() });
 };
 
 export const config = { path: "/api/admin/content" };

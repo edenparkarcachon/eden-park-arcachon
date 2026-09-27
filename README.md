@@ -34,7 +34,7 @@ Adresse : **https://edenpark-arcachon.fr/admin/**. Le mot de passe est défini d
   - Les photos prises au téléphone sont redimensionnées automatiquement.
   - La première photo est la photo principale. On peut associer une photo à une couleur : la fiche produit l'affiche quand le client choisit cette couleur.
   - L'adresse de la page (ex. `/produit/polo-dune-du-pyla/`) est fixée à la création, pour ne pas perdre le référencement Google.
-  - Après **Enregistrer et publier**, le site est reconstruit automatiquement : les pages sont à jour en 1 à 2 minutes.
+  - Après **Enregistrer**, la modification est mise en attente ; le bouton **Publier les modifications** (en haut de l’admin) met tout en ligne en 1 à 2 minutes.
 - **Stock** : tableau de tous les produits, par couleur et par taille.
   - Une modification est visible **immédiatement** sur le site, sans reconstruction.
   - Case vide = stock non suivi : l'article est considéré disponible.
@@ -61,6 +61,16 @@ Adresse : **https://edenpark-arcachon.fr/admin/**. Le mot de passe est défini d
 
   Tout est vérifié à l'enregistrement : horaires bien écrits, retour d'au moins 14 jours, liens valides… Les informations officielles (SIRET, TVA, RCS) ne sont pas modifiables.
 - **Médiathèque** : chaque bouton « Changer la photo » ouvre la liste de toutes les photos du site. On peut en choisir une ou en envoyer une nouvelle. Elle est aussi accessible depuis la fiche produit (« Choisir dans la médiathèque »).
+
+- **Publication groupée** : un enregistrement ne met plus le site en ligne immédiatement. La barre en haut de l'admin indique les modifications en attente (« 3 modifications à publier ») ; le bouton **Publier les modifications** les met toutes en ligne en une fois, en 1 à 2 minutes.
+  - Pourquoi : sur le plan gratuit Netlify (300 crédits/mois), chaque mise en ligne coûte 15 crédits, soit environ 20 par mois ; une fois le plafond atteint, le site est suspendu jusqu'au mois suivant. Le suivi se fait dans *Netlify → Usage & billing*.
+  - Sont actifs **immédiatement, sans publication** : le stock, les codes promo, le suivi des commandes.
+- **Commandes** : chaque commande payée arrive avec le statut « À préparer ». On la passe en « Prête en boutique », « Expédiée » (avec le numéro de suivi Colissimo), « Livrée / retirée » ou « Annulée ». Le bouton **Prévenir le client** ouvre votre messagerie avec un e-mail déjà rédigé (lien de suivi La Poste inclus). Le nombre de commandes à préparer s'affiche sur l'onglet.
+- **Codes promo** : pourcentage, montant fixe ou livraison offerte ; montant minimum, dates de validité, nombre d'utilisations maximum, catégories concernées. Le client saisit le code dans son panier ; la remise est recalculée par le serveur et transmise à Stripe. Chaque utilisation est comptée au paiement.
+- **Avis** : les avis déposés sur les fiches produits attendent votre validation (**Publier** / **Masquer** / **Supprimer**). « Achat vérifié » s'affiche si l'e-mail saisi a commandé ce produit. Les étoiles apparaissent sur la fiche et dans Google après « Publier ».
+- **FAQ** (Pages & photos → FAQ) : rubriques et questions modifiables.
+- **Journal** (Pages & photos → Journal) : articles avec photo, résumé et texte mis en forme (intertitres « ## », listes « - », **gras**, liens `[texte](/page/)`). Un article décoché « Publié » reste en brouillon.
+- **Mots magiques** : dans la FAQ, le bandeau du haut et les articles, `{livraison_offerte}`, `{prix_livraison}`, `{prix_domtom}`, `{delai_france}`, `{delai_domtom}`, `{delai_retour}`, `{delai_sur_commande}`, `{telephone}` et `{email}` sont remplacés par les valeurs des Réglages : les textes restent justes quand un tarif change.
 
 Tout ce qui est modifié dans l'admin est stocké dans Netlify Blobs, puis réinjecté dans `data/*.json` à chaque construction par le plugin de build `netlify/plugins/sync-catalog` (qui appelle `scripts/sync-catalog.mjs`). Les fichiers du dépôt ne servent que de valeurs de départ.
 
@@ -94,6 +104,20 @@ Tout ce qui est modifié dans l'admin est stocké dans Netlify Blobs, puis réin
    - créer une propriété **Google Analytics 4** et copier l'identifiant `G-…` dans `data/site.json` (`analytics_id`). Il n'est chargé qu'après acceptation des cookies ;
    - ajouter le site dans **Google Search Console** et soumettre `https://edenpark-arcachon.fr/sitemap.xml` ;
    - dans la fiche **Google Business Profile** de la boutique, renseigner l'adresse du site.
+
+## Notifications e-mail
+
+- **Messages du site** (contact, personnalisation, newsletter) : Netlify → *Project configuration → Notifications → Emails and webhooks → Form submission notifications → Add notification → Email notification*. Choisir « Any form » et saisir l'adresse de la boutique.
+- **Commandes** : dans Stripe → *Paramètres → Notifications* (ou *Settings → Personal details → Communication preferences*), cocher « Paiements réussis » pour recevoir un e-mail à chaque vente. Le détail (tailles, adresse, « sur commande ») est dans l'onglet **Commandes** de l'admin.
+
+## Google Shopping (fiches produits gratuites)
+
+Le site génère automatiquement un flux produits à l'adresse `/google-merchant.xml` (une ligne par couleur et par taille, prix, disponibilité, photos). Les produits sans vraie photo en sont exclus, car Google exige une photo.
+
+1. Créer un compte sur **merchants.google.com** avec le compte Google de la boutique, puis valider le site (avec le domaine définitif).
+2. *Produits → Ajouter des produits → Fichier* : choisir « Récupération planifiée » et indiquer `https://edenpark-arcachon.fr/google-merchant.xml`, récupération quotidienne.
+3. Configurer la livraison (Colissimo, tarifs et seuil de livraison offerte) et la politique de retour (30 jours) dans Merchant Center.
+4. Activer les « fiches gratuites » (onglet Croissance) : les produits apparaissent dans Google Shopping sans frais.
 
 ## Développement local
 

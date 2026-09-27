@@ -28,11 +28,14 @@
       <nav class="tabs" aria-label="Sections">
         <button type="button" data-tab="products" aria-current="true">Produits</button>
         <button type="button" data-tab="stock">Stock</button>
-        <button type="button" data-tab="orders">Commandes</button>
+        <button type="button" data-tab="orders">Commandes <span class="count" id="orders-count" hidden></span></button>
+        <button type="button" data-tab="promos">Codes promo</button>
+        <button type="button" data-tab="reviews">Avis <span class="count" id="reviews-count" hidden></span></button>
         <button type="button" data-tab="pages">Pages &amp; photos</button>
         <button type="button" data-tab="categories">Catégories</button>
         <button type="button" data-tab="settings">Réglages</button>
       </nav>
+      <div class="publishbar" id="publishbar" aria-live="polite"></div>
       <div class="top__right">
         <a href="/" target="_blank" rel="noopener">Voir le site ↗</a>
         <button type="button" class="link" id="logout">Se déconnecter</button>
@@ -44,7 +47,7 @@
       <div class="view__head">
         <div>
           <h1>Produits</h1>
-          <p class="muted">Cliquez sur un produit pour le modifier. Après chaque enregistrement, le site est mis à jour automatiquement en 1 à 2 minutes.</p>
+          <p class="muted">Cliquez sur un produit pour le modifier. Vos modifications sont enregistrées, puis mises en ligne toutes ensemble avec le bouton « Publier » en haut de l'écran.</p>
         </div>
         <button class="btn" type="button" id="new-product">+ Nouveau produit</button>
       </div>
@@ -61,7 +64,7 @@
           </div>
           <div class="actions">
             <button type="button" class="btn btn--ghost danger" id="ed-delete">Supprimer</button>
-            <button type="submit" class="btn">Enregistrer et publier</button>
+            <button type="submit" class="btn">Enregistrer</button>
           </div>
         </div>
         <p class="error" id="ed-error" hidden></p>
@@ -143,7 +146,7 @@
       <div class="view__head">
         <div>
           <h1>Commandes</h1>
-          <p class="muted">Commandes payées (les 100 dernières). Le détail complet et les remboursements se gèrent dans le tableau de bord Stripe.</p>
+          <p class="muted">Suivez chaque commande payée : préparation, expédition avec numéro de suivi Colissimo, retrait en boutique. Les remboursements se font dans le tableau de bord Stripe.</p>
         </div>
         <div class="actions">
           <a class="btn btn--ghost" href="https://dashboard.stripe.com/payments" target="_blank" rel="noopener">Ouvrir Stripe ↗</a>
@@ -153,6 +156,30 @@
       <div id="orders"></div>
     </section>
 
+    <!-- Codes promo -->
+    <section class="view" data-view="promos" hidden>
+      <div class="view__head sticky">
+        <div>
+          <h1>Codes promo</h1>
+          <p class="muted">Les clients saisissent le code dans leur panier. Les modifications sont actives immédiatement, sans publication. Un seul code par commande.</p>
+        </div>
+        <button class="btn" type="button" data-save="promos">Enregistrer les codes</button>
+      </div>
+      <div id="promos-form"></div>
+    </section>
+
+    <!-- Avis clients -->
+    <section class="view" data-view="reviews" hidden>
+      <div class="view__head">
+        <div>
+          <h1>Avis clients</h1>
+          <p class="muted">Les avis déposés sur les fiches produits attendent votre validation. Un avis publié apparaît sur le site après « Publier ». L'e-mail du client n'est jamais affiché sur le site.</p>
+        </div>
+        <button class="btn btn--ghost" type="button" id="refresh-reviews">Actualiser</button>
+      </div>
+      <div id="reviews"></div>
+    </section>
+
     <!-- Pages & photos, Catégories, Réglages (formulaires générés par admin.js) -->
     <section class="view" data-view="pages" hidden>
       <div class="view__head sticky">
@@ -160,7 +187,7 @@
           <h1>Pages &amp; photos</h1>
           <p class="muted">Textes et photos des pages du site. Cliquez sur « Changer la photo » pour en choisir une autre ou en envoyer une nouvelle.</p>
         </div>
-        <button class="btn" type="button" data-save="pages">Enregistrer et publier</button>
+        <button class="btn" type="button" data-save="pages">Enregistrer</button>
       </div>
       <nav class="subtabs" id="page-subtabs" aria-label="Pages"></nav>
       <div id="pages-form"></div>
@@ -172,7 +199,7 @@
           <h1>Catégories</h1>
           <p class="muted">Rubriques de la boutique (menu, page d'accueil, filtres). Une catégorie qui contient des produits ne peut pas être supprimée.</p>
         </div>
-        <button class="btn" type="button" data-save="categories">Enregistrer et publier</button>
+        <button class="btn" type="button" data-save="categories">Enregistrer</button>
       </div>
       <div id="categories-form"></div>
     </section>
@@ -183,7 +210,7 @@
           <h1>Réglages</h1>
           <p class="muted">Coordonnées, horaires, livraison, retours et mentions légales. Ces informations apparaissent sur tout le site.</p>
         </div>
-        <button class="btn" type="button" data-save="settings">Enregistrer et publier</button>
+        <button class="btn" type="button" data-save="settings">Enregistrer</button>
       </div>
       <div id="settings-form"></div>
     </section>

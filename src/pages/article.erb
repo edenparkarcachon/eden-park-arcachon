@@ -1,0 +1,33 @@
+<article class="article">
+  <header class="wrap wrap--narrow article__head">
+    <p class="eyebrow"><a href="/journal/" style="text-decoration:none">Le Journal</a> · <time datetime="<%= a['date'] %>"><%= date_fr(a['date']) %></time></p>
+    <h1><%= h(a['title']) %></h1>
+    <p class="lead"><%= h(tokens(a['excerpt'])) %></p>
+  </header>
+<% unless a['image'].nil? || a['image']['src'].to_s.empty? -%>
+  <figure class="wrap article__cover"><%= content_img(a['image'], sizes: '(max-width: 1240px) 100vw, 1160px', priority: true) %></figure>
+<% end -%>
+  <div class="wrap wrap--narrow prose article__body">
+    <%= rich_text(a['body']) %>
+  </div>
+</article>
+
+<% others = journal_articles.reject { |x| x['slug'] == a['slug'] }.first(3) -%>
+<% unless others.empty? -%>
+<section class="section section--sand" aria-labelledby="h-more">
+  <div class="wrap">
+    <div class="section-head"><h2 id="h-more">À lire aussi</h2><a class="link-arrow" href="/journal/">Tout le Journal <%= icon('arrow') %></a></div>
+    <div class="posts posts--3">
+<% others.each do |o| -%>
+      <article class="post-card">
+        <a class="post-card__media" href="<%= article_url(o) %>" tabindex="-1" aria-hidden="true"><%= content_img(o['image'], sizes: '(max-width: 860px) 100vw, 33vw') %></a>
+        <div class="post-card__body">
+          <time datetime="<%= o['date'] %>"><%= date_fr(o['date']) %></time>
+          <h3><a href="<%= article_url(o) %>"><%= h(o['title']) %></a></h3>
+        </div>
+      </article>
+<% end -%>
+    </div>
+  </div>
+</section>
+<% end -%>

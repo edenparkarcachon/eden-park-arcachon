@@ -44,7 +44,7 @@
   <div class="announce" role="note">
     <div class="announce__inner">
 <% CONTENT['announcement'].each do |msg| -%>
-      <span><%= h(msg) %></span>
+      <span><%= h(tokens(msg)) %></span>
 <% end -%>
     </div>
   </div>
@@ -70,6 +70,7 @@
       <%= logo %>
 
       <div class="nav nav--right">
+        <a class="nav__link" href="/journal/"<%= path.start_with?("/journal/") ? %q( aria-current="page") : "" %>>Journal</a>
         <a class="nav__link" href="/boutique-arcachon/"<%= path == '/boutique-arcachon/' ? ' aria-current="page"' : '' %>>La boutique</a>
         <a class="nav__link" href="/contact/"<%= path == '/contact/' ? ' aria-current="page"' : '' %>>Contact</a>
         <a class="icon-btn" href="/panier/" aria-label="Panier" data-open="mini-cart"><%= icon('bag') %><span class="cart-count" data-cart-count data-count="0">0</span></a>
@@ -102,6 +103,7 @@
 <% end -%>
           <li><a href="/notre-collection/">Notre collection</a></li>
           <li><a href="/personnalisation/">Personnalisation</a></li>
+          <li><a href="/journal/">Le Journal</a></li>
         </ul>
       </div>
       <div>
@@ -155,6 +157,7 @@
         </div>
         <a href="/notre-collection/">Notre collection</a>
         <a href="/personnalisation/">Personnalisation</a>
+        <a href="/journal/">Le Journal</a>
         <a href="/boutique-arcachon/">La boutique d'Arcachon</a>
         <a href="/contact/">Contact</a>
         <a href="/faq/">FAQ</a>
