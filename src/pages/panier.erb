@@ -6,6 +6,7 @@
 <div class="wrap cart" data-cart-page>
   <section aria-label="Articles du panier">
     <div data-cart-lines><p class="mini-empty">Chargement du panier…</p></div>
+    <div class="cart-look" data-cart-look hidden><h2>Complétez le look</h2><div data-cart-look-items></div></div>
     <p style="margin-top:24px"><a class="link-arrow" href="/boutique/"><%= icon('arrow').sub('<svg', '<svg style="transform:rotate(180deg)"') %> Continuer mes achats</a></p>
   </section>
 
@@ -20,6 +21,20 @@
         <label class="ship-opt"><input type="radio" name="zone" value="retrait"><span>Retrait en boutique<small>296 bd de la Plage, Arcachon</small></span><strong>Gratuit</strong></label>
       </div>
     </fieldset>
+<% gift = SITE['gift'] || {} -%>
+<% if gift['enabled'] -%>
+    <div class="gift" data-gift>
+      <label class="gift__toggle" for="gift-on">
+        <input type="checkbox" id="gift-on" data-gift-on>
+        <span><strong>Emballage cadeau</strong> <em><%= gift['price'].to_i > 0 ? "+ #{euro(gift['price'])}" : 'offert' %></em><small><%= h(gift['description']) %></small></span>
+      </label>
+      <div class="field gift__msg" data-gift-msg hidden>
+        <label for="gift-message">Votre message (facultatif)</label>
+        <textarea id="gift-message" maxlength="200" rows="3" placeholder="Joyeux anniversaire ! …" data-gift-message></textarea>
+        <small><span data-gift-left>200</span> caractères restants · le prix ne figurera pas dans le colis.</small>
+      </div>
+    </div>
+<% end -%>
     <div data-backorder-note></div>
     <form class="promo" data-promo-form novalidate>
       <label class="opt__label" for="promo-code" style="margin:6px 0 8px">Code promo</label>
@@ -31,6 +46,7 @@
     </form>
     <div class="summary__row"><span>Sous-total</span><span data-subtotal>0 €</span></div>
     <div class="summary__row summary__row--discount" data-discount-row hidden><span data-discount-label>Remise</span><span data-discount></span></div>
+    <div class="summary__row" data-gift-row hidden><span>Emballage cadeau</span><span data-gift-price></span></div>
     <div class="summary__row"><span>Livraison</span><span data-shipping>–</span></div>
     <div class="summary__row summary__total"><span>Total TTC</span><span data-total>0 €</span></div>
     <label class="consent" for="cgv-ok"><input type="checkbox" id="cgv-ok" data-cgv> <span>J'ai lu et j'accepte les <a href="/cgv/" target="_blank">conditions générales de vente</a>.</span></label>

@@ -121,6 +121,7 @@ export function validateCatalog(catalog) {
     if (!Array.isArray(p.colors) || !p.colors.length) return `Ajoutez au moins une couleur à « ${label} »`;
     if (!Array.isArray(p.sizes) || !p.sizes.length) return `Ajoutez au moins une taille à « ${label} »`;
     if (!Array.isArray(p.images)) return `Photos invalides pour « ${label} »`;
+    if (p.related !== undefined && (!Array.isArray(p.related) || p.related.some((x) => !/^[a-z0-9-]+$/.test(String(x))))) return `Produits associés invalides pour « ${label} »`;
     if (p.sale) {
       const s = p.sale;
       if (!Number.isInteger(s.price) || s.price <= 0 || s.price >= p.price) return `« ${label} » : le prix promotionnel doit être inférieur au prix normal`;

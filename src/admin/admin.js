@@ -229,6 +229,7 @@
     renderSizes();
     renderPhotos();
     renderEditorStock();
+    renderRelated();
     state.dirty = false;
   }
 
@@ -249,6 +250,8 @@
     p.description = $('#f-desc').value.split(/\n\s*\n/).map(function (s) { return s.replace(/\s+/g, ' ').trim(); }).filter(Boolean);
     p.details = $('#f-details').value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
     p.care = $('#f-care').value.trim();
+    p.related = $$('#related input:checked').map(function (i) { return i.value; });
+    if (!p.related.length) delete p.related;
     return p;
   }
 
@@ -258,6 +261,16 @@
     if (e.target.id === 'f-slug') { e.target.dataset.touched = '1'; e.target.value = slugify(e.target.value); }
     if (e.target.id === 'f-name' && !state.isNew) $('#ed-title').textContent = e.target.value || 'Produit';
   });
+
+  /* Complétez le look : produits associés */
+  function renderRelated() {
+    var p = state.editing;
+    var chosen = p.related || [];
+    $('#related').innerHTML = state.catalog.products.filter(function (x) { return x.slug !== p.slug; }).map(function (x) {
+      return '<label class="chip"><input type="checkbox" value="' + esc(x.slug) + '"' + (chosen.indexOf(x.slug) > -1 ? ' checked' : '') + '><span>' + esc(x.name) + '</span></label>';
+    }).join('') || '<p class="muted small">Aucun autre produit pour l’instant.</p>';
+  }
+  $('#related').addEventListener('change', function () { state.dirty = true; });
 
   /* Couleurs */
   function renderColors() {
@@ -595,6 +608,7 @@
         (o.surCommande ? '<br><span class="tag tag--late">Délai ' + state.backorderDays + ' jours</span>' : '') + '</div>' +
         '<div><strong>' + esc(o.client.nom) + '</strong> · <a href="mailto:' + esc(o.client.email) + '">' + esc(o.client.email) + '</a> ' + esc(o.client.telephone) +
         (addr ? '<br><span class="muted small">' + addr + '</span>' : '') + '<ul>' + items + '</ul>' +
+        (o.cadeau ? '<p class="gift-tag">🎁 <strong>Emballage cadeau</strong>' + (o.messageCadeau ? ' · message : « ' + esc(o.messageCadeau) + ' »' : '') + '</p>' : '') +
         (o.promo ? '<span class="tag">Code ' + esc(o.promo) + (o.remise ? ' : −' + euro(o.remise) : '') + '</span>' : '') + '</div>' +
         '<div class="order__total">' + euro(o.total || 0) + '</div>' +
         '<div class="order__track">' +
@@ -1076,6 +1090,10 @@
         { k: 'domtom_delay', label: 'DOM-TOM : délai affiché' },
         { k: 'backorder_days', type: 'int', min: 1, label: 'Délai « sur commande » quand le stock est à 0 (jours)' }] },
       { k: 'return_days', type: 'int', min: 14, label: 'Délai de retour (jours, 14 minimum)' }] },
+    { type: 'group', k: 'gift', label: 'Emballage cadeau (option du panier)', fields: [
+      { k: 'enabled', type: 'bool', label: 'Proposer l’emballage cadeau' },
+      { k: 'price', type: 'euro', label: 'Prix (€, 0 = offert)' },
+      { k: 'description', label: 'Description affichée au client', placeholder: 'ex. Paquet cadeau Eden Park avec votre message' }] },
     { type: 'group', k: 'legal', label: 'Mentions légales', help: 'Les autres informations (SIRET, TVA…) proviennent du registre du commerce.', fields: [
       { k: 'capital', label: 'Capital social', placeholder: 'ex. 10 000 €' }, { k: 'mediator', type: 'textarea', label: 'Médiateur de la consommation (nom et site web)', rows: 2 },
       { k: 'director', label: 'Directeur de la publication' }] },
@@ -1088,7 +1106,7 @@
     var s = state.site;
     state.settingsDraft = JSON.parse(JSON.stringify({
       phone: s.phone, email: s.email, address: s.address, geo: s.geo, hours: s.hours, social: s.social, shipping: s.shipping,
-      return_days: s.return_days, legal: { capital: s.legal.capital, mediator: s.legal.mediator, director: s.legal.director },
+      return_days: s.return_days, gift: s.gift || { enabled: false, price: 0, description: '' }, legal: { capital: s.legal.capital, mediator: s.legal.mediator, director: s.legal.director },
       description: s.description, analytics_id: /X{4}/.test(s.analytics_id) ? '' : s.analytics_id
     }));
     var box = $('#settings-form');

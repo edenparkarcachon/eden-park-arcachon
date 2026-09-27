@@ -326,6 +326,7 @@ ICONS = {
   "arrow" => '<path d="M4 12h15M13 6l6 6-6 6"/>',
   "needle" => '<path d="M4 20L17 7"/><path d="M15 5l4 4"/><circle cx="18.5" cy="5.5" r="1.2"/><path d="M4 20c2-4 5-5 8-4"/>',
   "ruler" => '<rect x="2" y="8" width="20" height="8" rx="1"/><path d="M6 8v3M10 8v4M14 8v3M18 8v4"/>',
+  "search" => %q(<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.3-4.3"/>),
   "filter" => '<path d="M4 6h16M7 12h10M10 18h4"/>',
   "gift" => '<rect x="3" y="8" width="18" height="4"/><path d="M5 12v8h14v-8M12 8v12"/><path d="M12 8S10 3 7.5 4.5 9 8 12 8zM12 8s2-5 4.5-3.5S15 8 12 8z"/>',
   "instagram" => '<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8" fill="currentColor"/>',
@@ -396,6 +397,7 @@ end
 
 def website_schema
   { "@context" => "https://schema.org", "@type" => "WebSite", "name" => SITE["name"], "url" => abs_url("/"), "inLanguage" => "fr-FR",
+    "potentialAction" => { "@type" => "SearchAction", "target" => { "@type" => "EntryPoint", "urlTemplate" => abs_url("/recherche/?q=") + "{search_term_string}" }, "query-input" => "required name=search_term_string" },
     "publisher" => { "@id" => abs_url("/#boutique") } }
 end
 
@@ -471,6 +473,28 @@ end
 # Messages des campagnes en cours pour le bandeau du haut
 def campaign_banners(date = BUILD_DATE)
   (SALES["campaigns"] || []).select { |c| c["active"] && !c["banner"].to_s.empty? && date >= c["starts"].to_s && date <= c["ends"].to_s }.map { |c| c["banner"] }
+end
+
+# « Complétez le look » : produits choisis dans l'admin, sinon produits d'autres catégories
+def look_for(p, max = 3)
+  chosen = (p["related"] || []).map { |slug| PRODUCTS.find { |x| x["slug"] == slug } }.compact
+  auto = PRODUCTS.reject { |x| x["slug"] == p["slug"] || x["category"] == p["category"] || chosen.include?(x) }
+                 .sort_by { |x| [product_images(x).first && product_images(x).first["placeholder"] ? 1 : 0, -x["popularity"].to_i] }
+  (chosen + auto).first(max)
+end
+
+# Petite vignette produit avec ajout direct (1 taille, 1 couleur) ou lien pour choisir
+def look_item(x)
+  img = product_images(x).first
+  one = x["sizes"].size == 1 && x["colors"].size == 1
+  action = one ? %(<button class="btn btn--ghost btn--sm" type="button" data-quick-add="#{x['slug']}">Ajouter</button>) : %(<a class="btn btn--ghost btn--sm" href="#{product_url(x)}">Choisir</a>)
+  <<~HTML
+    <div class="look-item">
+      <a href="#{product_url(x)}" class="look-item__img">#{img ? img_tag(img, sizes: '72px', alt: '') : ''}</a>
+      <div class="look-item__body"><a href="#{product_url(x)}">#{h(x['name'])}</a>#{price_html(x, 'card')}</div>
+      #{action}
+    </div>
+  HTML
 end
 
 def reviews_for(p)
@@ -713,11 +737,14 @@ js_catalog = {
   "shipping" => SITE["shipping"],
   "returnDays" => SITE["return_days"],
   "backorderDays" => SITE["shipping"]["backorder_days"],
+  "gift" => SITE["gift"] || { "enabled" => false },
   "stock" => STOCK,
   "analyticsId" => SITE["analytics_id"],
   "products" => PRODUCTS.map do |p|
     imgs = product_images(p)
     { "slug" => p["slug"], "name" => p["name"], "price" => p["price"], "url" => product_url(p), "offers" => PRICING[p["slug"]] || [],
+      "look" => look_for(p).map { |x| x["slug"] }, "short" => p["short"], "cat" => p["category"],
+      "search" => [p["name"], cat_by_slug(p["category"])["name"], p["short"], p["colors"].map { |c| c["name"] }.join(" "), (p["details"] || []).join(" "), (p["description"] || []).join(" ")].join(" "),
       "category" => cat_by_slug(p["category"])["name"],
       "colors" => p["colors"].map { |c| c["name"] }, "sizes" => p["sizes"],
       "images" => imgs.map { |i| { "src" => i["src720"] || i["src"], "variant" => i["variant"] } } }
@@ -881,6 +908,7 @@ journal_articles.each do |a|
 end
 
 # Pages techniques (non indexées)
+write_page(PageContext.new(path: "/recherche/", title: "Rechercher | Eden Park Arcachon", description: "Rechercher un produit Eden Park Arcachon.", noindex: true), "pages/recherche.erb")
 write_page(PageContext.new(path: "/panier/", title: "Mon panier | Eden Park Arcachon", description: "Votre panier Eden Park Arcachon.", noindex: true), "pages/panier.erb")
 write_page(PageContext.new(path: "/merci/", title: "Merci pour votre commande | Eden Park Arcachon", description: "Confirmation de commande.", noindex: true), "pages/merci.erb")
 write_page(PageContext.new(path: "/message-envoye/", title: "Message envoyé | Eden Park Arcachon", description: "Votre message a bien été envoyé.", noindex: true), "pages/message-envoye.erb")

@@ -66,6 +66,8 @@ export async function applyOrder(session) {
     adresse: shipping?.address || null,
     articles: recorded,
     promo: meta.promo_code || null,
+    cadeau: meta.cadeau === "oui",
+    messageCadeau: meta.message_cadeau || "",
     remise: parseInt(meta.remise, 10) || 0,
     // suivi de la commande dans l'admin
     statut: "a_preparer",

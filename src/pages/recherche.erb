@@ -1,0 +1,22 @@
+<header class="page-head">
+  <div class="wrap">
+    <p class="eyebrow">Boutique en ligne</p>
+    <h1>Rechercher</h1>
+    <form class="search-form search-form--page" action="/recherche/" role="search" data-search-page>
+      <%= icon('search') %>
+      <label class="sr-only" for="search-page-q">Rechercher un produit</label>
+      <input id="search-page-q" name="q" type="search" placeholder="Polo, casquette, Dune du Pyla, rose…" autocomplete="off">
+      <button class="btn" type="submit">Rechercher</button>
+    </form>
+  </div>
+</header>
+<section class="wrap" style="padding-bottom:90px">
+  <p class="muted-text" data-search-count></p>
+  <div class="grid" data-search-grid></div>
+  <noscript><p>La recherche nécessite JavaScript. <a href="/boutique/">Voir toute la boutique</a>.</p></noscript>
+</section>
+<div hidden data-search-source>
+<% PRODUCTS.each do |p| -%>
+  <%= product_card(p) %>
+<% end -%>
+</div>

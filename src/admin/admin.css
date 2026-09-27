@@ -184,6 +184,8 @@ dialog#picker::backdrop { background: rgba(2,10,31,.55); }
 .st--livree { background: #e3f3ea; color: var(--success); }
 .st--annulee { background: #eee; color: #777; }
 
+.gift-tag { background: var(--pink-soft); border-radius: 6px; padding: 6px 10px; margin: 8px 0 6px; font-size: .88rem; }
+
 /* Prix promotionnel (fiche produit) */
 .sale-box { border: 1px dashed #e0b6c4; background: #fdf6f8; border-radius: 8px; padding: 12px 14px 10px; margin-bottom: 14px; }
 .sale-box__title { font-weight: 600; font-size: .85rem; margin: 0 0 8px; color: var(--pink-deep); }

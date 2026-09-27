@@ -83,6 +83,17 @@ export async function buildSession(payload, siteUrl) {
     metadata[`item_${i}`] = [p.slug, it.color, it.size, qty].join("|").slice(0, 500);
   }
   if (!lineItems.length) return { error: "Panier vide" };
+
+  // Emballage cadeau (option du panier, activable dans Réglages)
+  const gift = site.gift || {};
+  if (payload.gift && payload.gift.on && gift.enabled) {
+    const message = String(payload.gift.message || "").replace(/\s+/g, " ").trim().slice(0, 200);
+    metadata.cadeau = "oui";
+    if (message) metadata.message_cadeau = message;
+    if (gift.price > 0) {
+      lineItems.push({ quantity: 1, price_data: { currency: "eur", unit_amount: gift.price, tax_behavior: "inclusive", product_data: { name: "Emballage cadeau" } } });
+    }
+  }
   metadata.sur_commande = backorder ? "oui" : "non";
 
   // Code promo : vérifié et calculé ici, jamais par le navigateur

@@ -485,6 +485,40 @@ await test("dates officielles des soldes 2027 (2e mercredi de janvier, dernier m
   assert.equal(ete.starts, "2027-06-30");
 });
 
+console.log("Emballage cadeau & produits associés");
+await test("emballage cadeau offert : message transmis à la commande, pas de ligne payante", async () => {
+  const s = await buildSession({ items: polo("S", 1), zone: "metro", gift: { on: true, message: "  Joyeux   anniversaire !  " } }, "https://x.fr");
+  assert.equal(s.params.metadata.cadeau, "oui");
+  assert.equal(s.params.metadata.message_cadeau, "Joyeux anniversaire !");
+  assert.equal(s.params.line_items.some((l) => l.price_data.product_data.name === "Emballage cadeau"), false);
+});
+await test("emballage cadeau payant (3 €) : ligne ajoutée au paiement ; désactivé : ignoré", async () => {
+  await adminContent(req("/admin/content", "PUT", { settings: { gift: { enabled: true, price: 300, description: "Paquet cadeau" } } }, auth()));
+  let s = await buildSession({ items: polo("S", 1), zone: "metro", gift: { on: true } }, "https://x.fr");
+  assert.equal(s.params.line_items.find((l) => l.price_data.product_data.name === "Emballage cadeau").price_data.unit_amount, 300);
+  await adminContent(req("/admin/content", "PUT", { settings: { gift: { enabled: false, price: 300, description: "" } } }, auth()));
+  s = await buildSession({ items: polo("S", 1), zone: "metro", gift: { on: true } }, "https://x.fr");
+  assert.equal(s.params.metadata.cadeau, undefined);
+});
+await test("emballage cadeau : prix invalide refusé", async () => {
+  assert.equal((await adminContent(req("/admin/content", "PUT", { settings: { gift: { enabled: true, price: -5 } } }, auth()))).status, 400);
+});
+await test("commande payée avec cadeau → option et message visibles dans l'admin", async () => {
+  await adminContent(req("/admin/content", "PUT", { settings: { gift: { enabled: true, price: 0, description: "Paquet cadeau" } } }, auth()));
+  const { params } = await buildSession({ items: polo("S", 1), zone: "retrait", gift: { on: true, message: "Bonne fête Papa" } }, "https://x.fr");
+  await webhookMod.default(signed({ type: "checkout.session.completed", data: { object: { id: "cs_gift_1", created: Math.floor(Date.now() / 1000), payment_status: "paid", amount_total: 9520, metadata: params.metadata, customer_details: { name: "B", email: "b@c.fr" } } } }));
+  const o = (await (await orders(req("/admin/orders", "GET", undefined, auth()))).json()).orders.find((x) => x.id === "cs_gift_1");
+  assert.equal(o.cadeau, true);
+  assert.equal(o.messageCadeau, "Bonne fête Papa");
+});
+await test("produits associés : liste invalide refusée, valide acceptée", async () => {
+  const c = (await (await adminCatalog(req("/admin/catalog", "GET", undefined, auth()))).json()).catalog;
+  const bad = structuredClone(c); bad.products[0].related = ["../x"];
+  assert.equal((await adminCatalog(req("/admin/catalog", "PUT", { catalog: bad }, auth()))).status, 400);
+  const good = structuredClone(c); good.products[0].related = ["casquette-bassin-arcachon"];
+  assert.equal((await adminCatalog(req("/admin/catalog", "PUT", { catalog: good }, auth()))).status, 200);
+});
+
 console.log("Suppression");
 await test("produit supprimé → son stock aussi", async () => {
   const c = structuredClone(catalog);

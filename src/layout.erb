@@ -79,6 +79,7 @@
         <a class="nav__link" href="/journal/"<%= path.start_with?("/journal/") ? %q( aria-current="page") : "" %>>Journal</a>
         <a class="nav__link" href="/boutique-arcachon/"<%= path == '/boutique-arcachon/' ? ' aria-current="page"' : '' %>>La boutique</a>
         <a class="nav__link" href="/contact/"<%= path == '/contact/' ? ' aria-current="page"' : '' %>>Contact</a>
+        <a class="icon-btn" href="/recherche/" aria-label="Rechercher" data-open-search><%= icon('search') %></a>
         <a class="icon-btn" href="/panier/" aria-label="Panier" data-open="mini-cart"><%= icon('bag') %><span class="cart-count" data-cart-count data-count="0">0</span></a>
       </div>
     </div>
@@ -174,7 +175,21 @@
     </div>
   </div>
 
-  <!-- Mini-panier -->
+<!-- Recherche -->
+<div class="search-panel" id="search-panel" hidden>
+  <div class="search-panel__backdrop" data-close-search></div>
+  <div class="search-panel__box" role="dialog" aria-modal="true" aria-label="Rechercher un produit">
+    <form class="search-form" action="/recherche/" role="search" data-search-form>
+      <%= icon('search') %>
+      <label class="sr-only" for="search-q">Rechercher</label>
+      <input id="search-q" name="q" type="search" placeholder="Polo, casquette, Dune du Pyla, rose…" autocomplete="off" data-search-input>
+      <button class="icon-btn" type="button" data-close-search aria-label="Fermer la recherche"><%= icon('close') %></button>
+    </form>
+    <div class="search-results" data-search-results aria-live="polite"></div>
+  </div>
+</div>
+
+<!-- Mini-panier -->
   <div class="drawer drawer--right" id="mini-cart" aria-hidden="true">
     <div class="drawer__backdrop" data-close></div>
     <div class="drawer__panel" role="dialog" aria-modal="true" aria-label="Panier">

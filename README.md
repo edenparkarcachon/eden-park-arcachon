@@ -73,6 +73,8 @@ Adresse : **https://edenpark-arcachon.fr/admin/**. Le mot de passe est défini d
   - **Mot « Soldes »** : réservé aux périodes officielles (hiver : à partir du 2e mercredi de janvier ; été : à partir du dernier mercredi de juin ; 4 semaines). L'admin affiche les prochaines dates et prévient si une campagne « Soldes » en sort. En dehors, utiliser le type « Promotion ».
   - **Début et fin automatiques** : le panier et le paiement appliquent le bon prix à la bonne date. Une tâche planifiée Netlify (`sales-scheduler`) republie le site la nuit où une campagne commence ou se termine ; le navigateur recalcule aussi les prix affichés à la date du jour.
   - Pendant une campagne, une page `/boutique/promotions/` et un filtre « En promotion » apparaissent automatiquement ; le flux Google Shopping indique le prix soldé.
+- **Complétez le look** : dans la fiche produit, cochez les produits à proposer avec celui-ci (fiche produit et panier, avec ajout direct pour les articles à taille unique). Sans sélection, le site propose automatiquement des produits d'autres catégories.
+- **Emballage cadeau** (Réglages → Emballage cadeau) : option du panier, offerte ou payante, avec un message de 200 caractères maximum. Il apparaît sur la commande dans l'onglet Commandes (« 🎁 Emballage cadeau » et message à glisser dans le paquet).
 - **Avis** : les avis déposés sur les fiches produits attendent votre validation (**Publier** / **Masquer** / **Supprimer**). « Achat vérifié » s'affiche si l'e-mail saisi a commandé ce produit. Les étoiles apparaissent sur la fiche et dans Google après « Publier ».
 - **FAQ** (Pages & photos → FAQ) : rubriques et questions modifiables.
 - **Journal** (Pages & photos → Journal) : articles avec photo, résumé et texte mis en forme (intertitres « ## », listes « - », **gras**, liens `[texte](/page/)`). Un article décoché « Publié » reste en brouillon.
@@ -110,6 +112,11 @@ Tout ce qui est modifié dans l'admin est stocké dans Netlify Blobs, puis réin
    - créer une propriété **Google Analytics 4** et copier l'identifiant `G-…` dans `data/site.json` (`analytics_id`). Il n'est chargé qu'après acceptation des cookies ;
    - ajouter le site dans **Google Search Console** et soumettre `https://edenpark-arcachon.fr/sitemap.xml` ;
    - dans la fiche **Google Business Profile** de la boutique, renseigner l'adresse du site.
+
+## Côté visiteurs
+
+- **Recherche** : loupe dans l'en-tête (ou touche « / »), résultats instantanés par nom, couleur, broderie ou description, et page complète `/recherche/?q=…`.
+- **Zoom plein écran** sur les photos produit : clic sur la photo, flèches ou balayage pour passer d'une photo à l'autre, Échap pour fermer.
 
 ## Notifications e-mail
 

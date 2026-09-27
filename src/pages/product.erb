@@ -8,7 +8,7 @@
     </div>
     <div class="gallery__main">
 <% imgs.each_with_index do |im, i| -%>
-      <figure class="<%= i.zero? ? 'is-active' : '' %>" data-slide="<%= i %>"><%= img_tag(im, sizes: '(max-width: 900px) 100vw, 55vw', priority: i.zero?, loading: i.zero? ? 'eager' : 'lazy') %></figure>
+      <figure class="<%= i.zero? ? 'is-active' : '' %>" data-slide="<%= i %>" data-full="<%= im['src'] %>" data-alt="<%= h(im['alt']) %>" tabindex="<%= i.zero? ? 0 : -1 %>" role="button" aria-label="Agrandir la photo"><%= img_tag(im, sizes: '(max-width: 900px) 100vw, 55vw', priority: i.zero?, loading: i.zero? ? 'eager' : 'lazy') %></figure>
 <% end -%>
     </div>
   </div>
@@ -62,6 +62,14 @@
       </div>
     </form>
 
+<% look = look_for(p) -%>
+<% unless look.empty? -%>
+    <div class="look-box">
+      <p class="opt__label">Complétez le look</p>
+<%= look.map { |x| look_item(x) }.join %>
+    </div>
+<% end -%>
+
     <ul class="pmini">
       <li><%= icon('truck') %><span>Livraison Colissimo <%= SITE['shipping']['metro_delay'] %> · offerte dès <%= euro(SITE['shipping']['free_threshold']) %></span></li>
       <li><%= icon('store') %><span>Retrait gratuit à la boutique d'Arcachon</span></li>
@@ -102,6 +110,14 @@
   <div class="buybar__info"><strong><%= h(p['name']) %></strong><span><%= euro(p['price']) %></span></div>
   <button class="btn" type="button" data-buybar-add tabindex="-1">Ajouter au panier</button>
 </div>
+
+<dialog class="lightbox" id="lightbox" aria-label="Photos du produit en grand">
+  <button class="lightbox__close" type="button" data-lb-close aria-label="Fermer">×</button>
+  <button class="lightbox__nav lightbox__prev" type="button" data-lb="-1" aria-label="Photo précédente">‹</button>
+  <img class="lightbox__img" alt="">
+  <button class="lightbox__nav lightbox__next" type="button" data-lb="1" aria-label="Photo suivante">›</button>
+  <p class="lightbox__count" aria-live="polite"></p>
+</dialog>
 
 <% unless single_size -%>
 <dialog id="size-guide" aria-labelledby="sg-title">

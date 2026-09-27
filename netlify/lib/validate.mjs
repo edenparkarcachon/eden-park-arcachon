@@ -68,6 +68,12 @@ export function cleanSettings(input) {
     if (!str(sh.metro_delay, 60) || !str(sh.domtom_delay, 60)) return { error: "Délais de livraison invalides" };
     out.shipping = { metro_price: sh.metro_price, domtom_price: sh.domtom_price, free_threshold: sh.free_threshold, backorder_days: sh.backorder_days, metro_delay: sh.metro_delay.trim(), domtom_delay: sh.domtom_delay.trim() };
   }
+  if (s.gift) {
+    const price = parseInt(s.gift.price, 10) || 0;
+    if (price < 0 || price > 5000) return { error: "Prix de l'emballage cadeau invalide (0 à 50 €)" };
+    if (!str(s.gift.description || "", 200)) return { error: "Description de l'emballage cadeau trop longue" };
+    out.gift = { enabled: !!s.gift.enabled, price, description: String(s.gift.description || "").trim() };
+  }
   if (s.return_days !== undefined) { if (!int(s.return_days, 14, 365)) return { error: "Le délai de retour doit être d'au moins 14 jours (minimum légal)" }; out.return_days = s.return_days; }
   if (s.legal) {
     out.legal = {};
