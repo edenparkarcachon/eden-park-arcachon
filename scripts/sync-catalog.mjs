@@ -83,7 +83,8 @@ export async function runSync({ strict = false } = {}) {
   if (settings) await writeJSON("data/site.json", deepMerge(await readJSON("data/site.json"), settings));
   // avis publiés uniquement, sans e-mail
   if (reviews) await writeJSON("data/reviews.json", publicReviews(reviews));
-  if (content) await writeJSON("data/content.json", { _note: (await readJSON("data/content.json"))._note, ...content });
+  // contenu de l'admin complété par les rubriques ajoutées depuis (FAQ, Journal…)
+  if (content) await writeJSON("data/content.json", deepMerge(await readJSON("data/content.json"), content));
   if (campaigns || history) {
     const current = await readJSON("data/sales.json").catch(() => ({}));
     await writeJSON("data/sales.json", { campaigns: campaigns || current.campaigns || [], history: history || current.history || {} });

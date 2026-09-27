@@ -39,7 +39,10 @@ export const backorderDays = (site) => site.shipping.backorder_days || 15;
 
 // ---------- Textes et photos des pages (onglet Pages & photos) ----------
 export async function getContent() {
-  return (await (await store("site")).get("content", { type: "json" })) || bundledContent;
+  // Un contenu enregistré avant l'ajout de nouvelles rubriques (FAQ, Journal…) est complété
+  // par les valeurs du projet : ce qui a été saisi dans l'admin reste prioritaire.
+  const saved = await (await store("site")).get("content", { type: "json" });
+  return saved ? deepMerge(bundledContent, saved) : bundledContent;
 }
 
 export async function saveContent(content) {

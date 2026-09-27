@@ -519,6 +519,20 @@ await test("produits associés : liste invalide refusée, valide acceptée", asy
   assert.equal((await adminCatalog(req("/admin/catalog", "PUT", { catalog: good }, auth()))).status, 200);
 });
 
+console.log("Compatibilité des anciens contenus");
+await test("contenu enregistré avant l'ajout de la FAQ et du Journal → complété, jamais perdu", async () => {
+  const { store } = await import("../netlify/lib/store.mjs");
+  const old = structuredClone(content);
+  delete old.faq; delete old.journal; delete old.journal_intro;
+  old.home.hero.title = "Titre saisi dans l'admin";
+  await (await store("site")).setJSON("content", old);
+  const d = await (await adminContent(req("/admin/content", "GET", undefined, auth()))).json();
+  assert.ok(d.content.faq.sections.length > 0, "FAQ reprise du projet");
+  assert.ok(d.content.journal.length > 0, "articles du Journal repris du projet");
+  assert.equal(d.content.home.hero.title, "Titre saisi dans l'admin", "la saisie de l'admin reste prioritaire");
+  assert.equal((await adminContent(req("/admin/content", "PUT", { content: d.content }, auth()))).status, 200, "l'enregistrement fonctionne de nouveau");
+});
+
 console.log("Suppression");
 await test("produit supprimé → son stock aussi", async () => {
   const c = structuredClone(catalog);
