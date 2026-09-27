@@ -29,6 +29,7 @@
         <button type="button" data-tab="products" aria-current="true">Produits</button>
         <button type="button" data-tab="stock">Stock</button>
         <button type="button" data-tab="orders">Commandes <span class="count" id="orders-count" hidden></span></button>
+        <button type="button" data-tab="sales">Soldes &amp; promos</button>
         <button type="button" data-tab="promos">Codes promo</button>
         <button type="button" data-tab="reviews">Avis <span class="count" id="reviews-count" hidden></span></button>
         <button type="button" data-tab="pages">Pages &amp; photos</button>
@@ -78,6 +79,15 @@
               <div class="row">
                 <div class="field"><label for="f-cat">Catégorie *</label><select id="f-cat"></select></div>
                 <div class="field"><label for="f-price">Prix TTC (€) *</label><input id="f-price" type="number" min="0" step="0.01" inputmode="decimal" required></div>
+              </div>
+              <div class="sale-box">
+                <p class="sale-box__title">Prix promotionnel <span class="muted small">(facultatif)</span></p>
+                <div class="row3">
+                  <div class="field"><label for="f-sale">Prix réduit (€)</label><input id="f-sale" type="number" min="0" step="0.01" inputmode="decimal" placeholder="ex. 95"></div>
+                  <div class="field"><label for="f-sale-start">Du</label><input id="f-sale-start" type="date"></div>
+                  <div class="field"><label for="f-sale-end">Au (inclus)</label><input id="f-sale-end" type="date"></div>
+                </div>
+                <small class="muted" id="f-sale-help">Laissez vide pour aucune promotion. Sans dates, la promotion s'applique dès la publication et jusqu'à ce que vous la retiriez. Pour des soldes sur plusieurs produits, utilisez plutôt l'onglet « Soldes & promos ».</small>
               </div>
               <div class="row">
                 <div class="field"><label for="f-fit">Coupe</label><input id="f-fit" placeholder="Coupe droite"></div>
@@ -154,6 +164,19 @@
         </div>
       </div>
       <div id="orders"></div>
+    </section>
+
+    <!-- Soldes & promotions -->
+    <section class="view" data-view="sales" hidden>
+      <div class="view__head sticky">
+        <div>
+          <h1>Soldes &amp; promotions</h1>
+          <p class="muted">Réductions en pourcentage sur tout le site, une catégorie ou une sélection de produits, entre deux dates. Le prix barré (prix le plus bas des 30 derniers jours) est calculé automatiquement, comme l'exige la loi. Le site se met à jour tout seul la nuit où une campagne commence ou se termine.</p>
+        </div>
+        <button class="btn" type="button" data-save="sales">Enregistrer</button>
+      </div>
+      <div id="sales-info"></div>
+      <div id="sales-form"></div>
     </section>
 
     <!-- Codes promo -->

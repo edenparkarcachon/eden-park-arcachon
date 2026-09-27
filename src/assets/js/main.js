@@ -33,6 +33,57 @@
     return p.images[0] ? p.images[0].src : '';
   }
 
+  /* ---------- Soldes et promotions : prix appliqué à la date du jour (Paris) ---------- */
+  function parisToday() {
+    try { return new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' }); } catch (e) { return new Date().toISOString().slice(0, 10); }
+  }
+  function activeOffer(slug) {
+    var p = product(slug);
+    if (!p) return null;
+    var d = parisToday();
+    return (p.offers || []).filter(function (o) {
+      return (!o.starts || d >= o.starts) && (!o.ends || d <= o.ends) && o.price < p.price;
+    }).sort(function (a, b) { return a.price - b.price; })[0] || null;
+  }
+  function effPrice(slug) {
+    var o = activeOffer(slug);
+    return o ? o.price : product(slug).price;
+  }
+  function saleBadge(o) { return o.ref ? '-' + o.percent + ' %' : o.label; }
+  function dateLong(iso) {
+    var d = new Date(iso + 'T12:00:00');
+    return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+  // Met à jour les prix affichés (générés à la publication) selon la date du jour
+  function refreshPrices() {
+    $$('[data-price-slug]').forEach(function (el) {
+      var slug = el.getAttribute('data-price-slug');
+      var p = product(slug);
+      if (!p) return;
+      var o = activeOffer(slug);
+      var page = el.getAttribute('data-price-style') === 'page';
+      el.innerHTML = o
+        ? '<ins>' + euro(o.price) + '</ins>' + (o.ref ? ' <del>' + euro(o.ref) + '</del>' : '') + (page ? ' <span class="badge badge--sale">' + esc(saleBadge(o)) + '</span>' : '')
+        : euro(p.price);
+      var card = el.closest('.card');
+      if (card) { card.setAttribute('data-price', o ? o.price : p.price); card.setAttribute('data-sale', o ? '1' : '0'); }
+    });
+    $$('[data-sale-badge]').forEach(function (b) {
+      var o = activeOffer(b.getAttribute('data-sale-badge'));
+      b.hidden = !o;
+      if (o) b.textContent = saleBadge(o);
+    });
+    $$('[data-sale-note]').forEach(function (n) {
+      var o = activeOffer(n.getAttribute('data-sale-note'));
+      var parts = [];
+      if (o && o.ref) parts.push(o.label + ' : le prix barré est le prix le plus bas pratiqué au cours des 30 jours précédant la réduction.');
+      if (o && o.ends) parts.push('Offre valable jusqu’au ' + dateLong(o.ends) + ' inclus.');
+      n.textContent = parts.join(' ');
+    });
+  }
+
+  refreshPrices();
+
   /* ---------- Panier ---------- */
   var CART_KEY = 'ep_cart_v1';
   var memoryCart = [];
@@ -56,7 +107,7 @@
     saveCart(c);
   }
   function subtotal(c) {
-    return c.reduce(function (s, l) { return s + product(l.slug).price * l.qty; }, 0);
+    return c.reduce(function (s, l) { return s + effPrice(l.slug) * l.qty; }, 0);
   }
   function shippingCost(zone, sub) {
     if (zone === 'retrait') return 0;
@@ -87,16 +138,17 @@
   function lineHtml(l, i, big) {
     var p = product(l.slug);
     var meta = esc(l.color) + (l.size && l.size !== 'Taille unique' ? ' · Taille ' + esc(l.size) : '');
+    var unit = effPrice(l.slug);
     var late = isLate(l.slug, l.color, l.size, l.qty) ? '<br><span class="late">' + lateText + '</span>' : '';
     var img = '<img src="' + esc(imageFor(p, l.color)) + '" alt="" width="110" height="140" loading="lazy">';
     var qty = '<div class="qty qty--sm"><button type="button" data-line-qty="' + i + '" data-delta="-1" aria-label="Diminuer">−</button>' +
       '<input type="number" value="' + l.qty + '" min="1" max="10" data-line-input="' + i + '" aria-label="Quantité"><button type="button" data-line-qty="' + i + '" data-delta="1" aria-label="Augmenter">+</button></div>';
     if (!big) {
       return '<div class="mini-item">' + img + '<div><p class="mini-item__name"><a href="' + p.url + '">' + esc(p.name) + '</a></p><p class="mini-item__meta">' + meta + late + '</p>' + qty +
-        '</div><div class="mini-item__price">' + euro(p.price * l.qty) + '<br><button class="link-btn" type="button" data-line-remove="' + i + '">Retirer</button></div></div>';
+        '</div><div class="mini-item__price">' + euro(unit * l.qty) + '<br><button class="link-btn" type="button" data-line-remove="' + i + '">Retirer</button></div></div>';
     }
-    return '<div class="cart-line">' + img + '<div><p class="cart-line__name"><a href="' + p.url + '">' + esc(p.name) + '</a></p><p class="cart-line__meta">' + meta + ' · ' + euro(p.price) + late + '</p>' + qty +
-      '</div><div class="cart-line__side"><strong>' + euro(p.price * l.qty) + '</strong><button class="link-btn" type="button" data-line-remove="' + i + '">Supprimer</button></div></div>';
+    return '<div class="cart-line">' + img + '<div><p class="cart-line__name"><a href="' + p.url + '">' + esc(p.name) + '</a></p><p class="cart-line__meta">' + meta + ' · ' + euro(unit) + (unit < p.price ? ' <del>' + euro(p.price) + '</del>' : '') + late + '</p>' + qty +
+      '</div><div class="cart-line__side"><strong>' + euro(unit * l.qty) + '</strong><button class="link-btn" type="button" data-line-remove="' + i + '">Supprimer</button></div></div>';
   }
   function currentZone() {
     var r = $('input[name="zone"]:checked');
@@ -461,6 +513,7 @@
     var apply = function (resetPage) {
       if (resetPage) page = 1;
       var cats = values('cat'), sizes = values('size'), colors = values('color'), fits = values('fit');
+      var saleOnly = values('sale').length > 0;
       var min = parseFloat(filters.min.value) * 100 || 0;
       var max = parseFloat(filters.max.value) * 100 || Infinity;
       var sort = sortSel.value;
@@ -473,7 +526,7 @@
       });
       var visible = keyed.filter(function (c) {
         var p = +c.dataset.price;
-        return (!cats.length || cats.indexOf(c.dataset.cat) > -1) && intersects(c.dataset.sizes, sizes) &&
+        return (!cats.length || cats.indexOf(c.dataset.cat) > -1) && (!saleOnly || c.dataset.sale === '1') && intersects(c.dataset.sizes, sizes) &&
           intersects(c.dataset.colors, colors) && intersects(c.dataset.fit, fits) && p >= min && p <= max;
       });
       keyed.forEach(function (c) { grid.appendChild(c); c.hidden = true; });

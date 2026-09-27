@@ -33,6 +33,15 @@ STOCK = File.exist?(STOCK_FILE) ? JSON.parse(File.read(STOCK_FILE)) : {}
 # Avis clients publiés (modérés dans l'admin), par produit
 REVIEWS_FILE = File.join(ROOT, "data/reviews.json")
 REVIEWS = File.exist?(REVIEWS_FILE) ? JSON.parse(File.read(REVIEWS_FILE)) : {}
+# Soldes et promotions : réductions calculées par scripts/sync-catalog.mjs (netlify/lib/pricing.mjs)
+PRICING_FILE = File.join(ROOT, "data/pricing.json")
+PRICING = File.exist?(PRICING_FILE) ? JSON.parse(File.read(PRICING_FILE)) : {}
+SALES_FILE = File.join(ROOT, "data/sales.json")
+SALES = File.exist?(SALES_FILE) ? JSON.parse(File.read(SALES_FILE)) : { "campaigns" => [] }
+BUILD_DATE = begin
+  ENV["TZ"] = "Europe/Paris"
+  Time.now.strftime("%Y-%m-%d")
+end
 # Textes et photos des pages (modifiables depuis l'admin, onglet Pages & photos)
 CONTENT = JSON.parse(File.read(File.join(ROOT, "data/content.json")))
 
@@ -414,6 +423,56 @@ def return_policy
     "returnFees" => "https://schema.org/FreeReturn" }
 end
 
+# ---------------------------------------------------------------------------
+# Soldes et promotions (même logique que netlify/lib/pricing.mjs et main.js)
+# ---------------------------------------------------------------------------
+
+def active_offer(p, date = BUILD_DATE)
+  (PRICING[p["slug"]] || [])
+    .select { |o| (o["starts"].to_s.empty? || date >= o["starts"]) && (o["ends"].to_s.empty? || date <= o["ends"]) && o["price"] < p["price"] }
+    .min_by { |o| o["price"] }
+end
+
+def effective_price(p)
+  (o = active_offer(p)) ? o["price"] : p["price"]
+end
+
+def on_sale_products
+  PRODUCTS.select { |p| active_offer(p) }
+end
+
+def sale_badge_text(o)
+  o["percent"].to_i > 0 ? "-#{o['percent']} %" : o["label"]
+end
+
+# Prix affiché (carte produit ou fiche) ; recalculé par main.js à la date du jour
+def price_html(p, style)
+  o = active_offer(p)
+  inner = if o
+            ref = o["ref"] ? %( <del>#{euro(o['ref'])}</del>) : ""
+            badge = style == "page" ? %( <span class="badge badge--sale">#{h(o['ref'] ? sale_badge_text(o) : o['label'])}</span>) : ""
+            %(<ins>#{euro(o['price'])}</ins>#{ref}#{badge})
+          else
+            euro(p["price"])
+          end
+  tag = style == "page" ? "p" : "span"
+  cls = style == "page" ? "pinfo__price" : "price"
+  %(<#{tag} class="#{cls}" data-price-slug="#{p['slug']}" data-price-style="#{style}">#{inner}</#{tag}>)
+end
+
+def sale_note(o)
+  return "" unless o
+  parts = []
+  parts << "#{o['label']} : le prix barré est le prix le plus bas pratiqué au cours des 30 jours précédant la réduction." if o["ref"]
+  parts << "Offre valable jusqu'au #{date_fr(o['ends'])} inclus." unless o["ends"].to_s.empty?
+  parts.join(" ")
+end
+
+# Messages des campagnes en cours pour le bandeau du haut
+def campaign_banners(date = BUILD_DATE)
+  (SALES["campaigns"] || []).select { |c| c["active"] && !c["banner"].to_s.empty? && date >= c["starts"].to_s && date <= c["ends"].to_s }.map { |c| c["banner"] }
+end
+
 def reviews_for(p)
   REVIEWS[p["slug"]] || []
 end
@@ -454,13 +513,14 @@ def product_schema(p)
       "@type" => "Offer",
       "url" => abs_url(product_url(p)),
       "priceCurrency" => "EUR",
-      "price" => euro_plain(p["price"]),
+      "price" => euro_plain(effective_price(p)),
+      "priceValidUntil" => (o = active_offer(p)) && !o["ends"].to_s.empty? ? o["ends"] : nil,
       "availability" => backorder_only?(p) ? "https://schema.org/BackOrder" : "https://schema.org/InStock",
       "itemCondition" => "https://schema.org/NewCondition",
       "seller" => { "@id" => abs_url("/#boutique") },
       "shippingDetails" => shipping_details,
       "hasMerchantReturnPolicy" => return_policy
-    }
+    }.reject { |_, v| v.nil? }
   }.merge(rating_data).reject { |_, v| v.nil? }
 end
 
@@ -492,7 +552,9 @@ def product_card(p, heading: "h3")
   cat = cat_by_slug(p["category"])
   first = imgs[0]
   second = imgs[1]
-  badges = p["badges"].map.with_index { |b, i| %(<span class="badge#{i.zero? ? ' badge--pink' : ''}">#{h(b)}</span>) }.join
+  offer = active_offer(p)
+  sale_badge = %(<span class="badge badge--sale" data-sale-badge="#{p['slug']}"#{offer ? '' : ' hidden'}>#{offer ? h(offer['ref'] ? sale_badge_text(offer) : offer['label']) : ''}</span>)
+  badges = sale_badge + p["badges"].map.with_index { |b, i| %(<span class="badge#{i.zero? ? ' badge--pink' : ''}">#{h(b)}</span>) }.join
   sizes_attr = p["sizes"].join("|")
   colors_attr = p["colors"].map { |c| c["name"] }.join("|")
   one_size = p["sizes"].size == 1 && p["colors"].size == 1
@@ -502,9 +564,9 @@ def product_card(p, heading: "h3")
             %(<a class="btn btn--light btn--block card__quick" href="#{product_url(p)}" tabindex="-1">Choisir ma taille</a>)
           end
   <<~HTML
-    <article class="card" data-slug="#{p['slug']}" data-cat="#{p['category']}" data-price="#{p['price']}" data-sizes="#{h(sizes_attr)}" data-colors="#{h(colors_attr)}" data-fit="#{h(p['fit'])}" data-date="#{p['date']}" data-pop="#{p['popularity']}">
+    <article class="card" data-slug="#{p['slug']}" data-cat="#{p['category']}" data-price="#{effective_price(p)}" data-sale="#{offer ? 1 : 0}" data-sizes="#{h(sizes_attr)}" data-colors="#{h(colors_attr)}" data-fit="#{h(p['fit'])}" data-date="#{p['date']}" data-pop="#{p['popularity']}">
       <div class="card__media">
-        #{badges.empty? ? '' : %(<div class="badges">#{badges}</div>)}
+        <div class="badges">#{badges}</div>
         #{img_tag(first)}
         #{second ? img_tag(second, cls: 'alt', alt: '') : ''}
         #{quick}
@@ -512,7 +574,7 @@ def product_card(p, heading: "h3")
       <div class="card__body">
         <span class="card__cat">#{h(cat['name'])}</span>
         <#{heading} class="card__name"><a href="#{product_url(p)}">#{h(p['name'])}</a></#{heading}>
-        <div class="card__row"><span class="price">#{euro(p['price'])}</span>#{swatches(p)}</div>
+        <div class="card__row">#{price_html(p, 'card')}#{swatches(p)}</div>
       </div>
     </article>
   HTML
@@ -655,7 +717,7 @@ js_catalog = {
   "analyticsId" => SITE["analytics_id"],
   "products" => PRODUCTS.map do |p|
     imgs = product_images(p)
-    { "slug" => p["slug"], "name" => p["name"], "price" => p["price"], "url" => product_url(p),
+    { "slug" => p["slug"], "name" => p["name"], "price" => p["price"], "url" => product_url(p), "offers" => PRICING[p["slug"]] || [],
       "category" => cat_by_slug(p["category"])["name"],
       "colors" => p["colors"].map { |c| c["name"] }, "sizes" => p["sizes"],
       "images" => imgs.map { |i| { "src" => i["src720"] || i["src"], "variant" => i["variant"] } } }
@@ -708,6 +770,26 @@ CATS.each do |c|
     crumbs: crumbs,
     schemas: [breadcrumb_schema(crumbs), list],
     locals: { "category" => c, "items" => items }
+  ), "pages/shop.erb")
+end
+
+# Page des promotions en cours (générée seulement s'il y en a)
+unless on_sale_products.empty?
+  running = (SALES["campaigns"] || []).select { |c| c["active"] && BUILD_DATE >= c["starts"].to_s && BUILD_DATE <= c["ends"].to_s }
+  soldes = running.any? { |c| c["kind"] == "soldes" }
+  promo_cat = {
+    "slug" => "promotions", "name" => soldes ? "Soldes" : "Promotions",
+    "title" => soldes ? "Les soldes Eden Park Arcachon" : "Nos promotions du moment",
+    "intro" => (running.map { |c| c["banner"] }.reject(&:empty?).first || "Profitez de nos prix réduits sur une sélection de pièces de la collection Bassin d'Arcachon, dans la limite des stocks disponibles.")
+  }
+  crumbs = [crumb_home, crumb_shop, [promo_cat["name"], "/boutique/promotions/"]]
+  write_page(PageContext.new(
+    path: "/boutique/promotions/",
+    title: "#{promo_cat['title']} | Eden Park Arcachon",
+    description: "#{promo_cat['intro']}"[0, 160],
+    crumbs: crumbs,
+    schemas: [breadcrumb_schema(crumbs)],
+    locals: { "category" => promo_cat, "items" => on_sale_products.sort_by { |p| effective_price(p).to_f / p["price"] } }
   ), "pages/shop.erb")
 end
 
@@ -846,6 +928,7 @@ feed_items = PRODUCTS.flat_map do |p|
         <g:image_link>#{xml(abs_url(variant_photos.first['src']))}</g:image_link>
     #{variant_photos.drop(1).first(9).map { |i| "    <g:additional_image_link>#{xml(abs_url(i['src']))}</g:additional_image_link>" }.join("\n")}
         <g:price>#{euro_plain(p['price'])} EUR</g:price>
+    #{(so = active_offer(p)) ? "    <g:sale_price>#{euro_plain(so['price'])} EUR</g:sale_price>" + (so['ends'].to_s.empty? ? '' : "\n        <g:sale_price_effective_date>#{so['starts'].to_s.empty? ? BUILD_DATE : so['starts']}T00:00+01:00/#{so['ends']}T23:59+01:00</g:sale_price_effective_date>") : ''}
         <g:availability>#{late ? 'backorder' : 'in_stock'}</g:availability>
     #{late ? "    <g:availability_date>#{(Date.today + (s['backorder_days'] || 15)).iso8601}T12:00+02:00</g:availability_date>" : ''}
         <g:brand>Eden Park</g:brand>

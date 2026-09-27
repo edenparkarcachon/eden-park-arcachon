@@ -183,3 +183,18 @@ dialog#picker::backdrop { background: rgba(2,10,31,.55); }
 .st--prete, .st--expediee { background: #e7eefc; color: #2a4a9a; }
 .st--livree { background: #e3f3ea; color: var(--success); }
 .st--annulee { background: #eee; color: #777; }
+
+/* Prix promotionnel (fiche produit) */
+.sale-box { border: 1px dashed #e0b6c4; background: #fdf6f8; border-radius: 8px; padding: 12px 14px 10px; margin-bottom: 14px; }
+.sale-box__title { font-weight: 600; font-size: .85rem; margin: 0 0 8px; color: var(--pink-deep); }
+.sale-box .field { margin-bottom: 8px; }
+.row3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 560px) { .row3 { grid-template-columns: 1fr; } }
+.warn { background: #fff4d6; border-left: 3px solid #d59b00; padding: 8px 12px; font-size: .85rem; border-radius: 4px; margin: 0 0 12px; }
+
+/* Onglets : une ligne dédiée, défilement horizontal si l'écran est étroit */
+.top { row-gap: 10px; }
+.tabs { order: 3; width: 100%; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: thin; padding-bottom: 2px; }
+.tabs button { white-space: nowrap; flex: none; }
+.publishbar { order: 2; }
+.top__right { order: 1; }

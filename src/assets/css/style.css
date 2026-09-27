@@ -621,3 +621,13 @@ dialog::backdrop { background: rgba(2,10,31,.5); }
   .buybar__info span { font-size: .85rem; color: var(--muted); }
   .buybar .btn { min-height: 46px; padding: 0 18px; flex: none; }
 }
+
+/* ---------- Soldes & promotions ---------- */
+.badge--sale { background: var(--pink-deep); color: #fff; }
+.price ins, .pinfo__price ins { text-decoration: none; color: var(--pink-deep); font-weight: 600; }
+.price del, .pinfo__price del { color: var(--muted); font-weight: 400; margin-left: 6px; font-size: .88em; }
+.pinfo__price .badge { vertical-align: 3px; margin-left: 8px; }
+.sale-note { font-size: .78rem; color: var(--muted); margin: -2px 0 6px; max-width: 52ch; }
+.sale-note:empty { display: none; }
+.announce__sale { color: var(--pink); font-weight: 500; }
+.cart-line__meta del, .mini-item__meta del { color: var(--muted); }

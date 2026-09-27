@@ -100,6 +100,7 @@
     if (name === 'categories') renderCategories();
     if (name === 'settings') renderSettings();
     if (name === 'promos') renderPromos();
+    if (name === 'sales') renderSales();
     if (name === 'reviews') loadReviews();
     window.scrollTo(0, 0);
     return true;
@@ -213,6 +214,10 @@
     $('#f-slug-help').textContent = state.isNew ? 'Générée à partir du nom. Elle ne pourra plus changer ensuite (bon pour Google).' : 'Adresse définitive de la page produit.';
     $('#f-cat').value = p.category;
     $('#f-price').value = p.price ? (p.price / 100).toFixed(2) : '';
+    var sale = p.sale || {};
+    $('#f-sale').value = sale.price ? (sale.price / 100).toFixed(2) : '';
+    $('#f-sale-start').value = sale.starts || '';
+    $('#f-sale-end').value = sale.ends || '';
     $('#f-fit').value = p.fit || '';
     $('#f-badges').value = (p.badges || []).join(', ');
     $('#f-featured').checked = !!p.featured;
@@ -234,6 +239,9 @@
     if (state.isNew) p.slug = $('#f-slug').value.trim();
     p.category = $('#f-cat').value;
     p.price = Math.round(parseFloat(String($('#f-price').value).replace(',', '.')) * 100) || 0;
+    var salePrice = Math.round(parseFloat(String($('#f-sale').value).replace(',', '.')) * 100) || 0;
+    if (salePrice) p.sale = { price: salePrice, starts: $('#f-sale-start').value || '', ends: $('#f-sale-end').value || '' };
+    else delete p.sale;
     p.fit = $('#f-fit').value.trim();
     p.badges = $('#f-badges').value.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
     p.featured = $('#f-featured').checked;
@@ -1136,6 +1144,53 @@
     }).catch(function (ex) { toast(ex.message, true); b.disabled = false; });
   });
 
+  /* ---------- Soldes & promotions ---------- */
+  var SALE_FIELDS = [
+    { k: 'name', label: 'Nom de la campagne (interne)', placeholder: 'ex. Soldes d’hiver 2027' },
+    { k: 'kind', type: 'select', label: 'Type', options: [['promotion', 'Promotion'], ['soldes', 'Soldes (périodes officielles uniquement)']],
+      help: 'Le mot « Soldes » n’est autorisé que pendant les soldes officiels (hiver : à partir du 2e mercredi de janvier ; été : à partir du dernier mercredi de juin ; 4 semaines). Les articles doivent avoir été proposés à la vente depuis au moins un mois.' },
+    { k: 'percent', type: 'int', min: 1, label: 'Réduction (%)' },
+    { k: 'badge', label: 'Étiquette sur les produits (facultatif)', placeholder: 'ex. Soldes, Black Friday…', help: 'Si le prix barré est applicable, l’étiquette affiche le pourcentage (ex. -30 %).' },
+    { k: 'scope', type: 'select', label: 'Articles concernés', options: [['all', 'Tout le catalogue'], ['categories', 'Certaines catégories'], ['products', 'Certains produits']] },
+    { k: 'categories', type: 'checks', label: 'Catégories (si « Certaines catégories »)', options: function () { return state.catalog.categories.map(function (c) { return [c.slug, c.name]; }); } },
+    { k: 'products', type: 'checks', label: 'Produits (si « Certains produits »)', options: function () { return state.catalog.products.map(function (p) { return [p.slug, p.name]; }); } },
+    { k: 'starts', type: 'date', label: 'Début' },
+    { k: 'ends', type: 'date', label: 'Fin (incluse)' },
+    { k: 'banner', label: 'Message dans le bandeau du haut pendant la campagne (facultatif)', placeholder: 'ex. Soldes d’hiver : jusqu’à -30 % sur la collection' },
+    { k: 'active', type: 'bool', label: 'Campagne active' }
+  ];
+  function todayParis() { try { return new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' }); } catch (e) { return new Date().toISOString().slice(0, 10); } }
+  function campaignStatus(c) {
+    var d = todayParis();
+    if (!c.active) return 'désactivée';
+    if (!c.starts || !c.ends) return 'dates à compléter';
+    if (d < c.starts) return 'à venir (' + c.starts.split('-').reverse().join('/') + ')';
+    if (d > c.ends) return 'terminée';
+    return 'en cours';
+  }
+  function outsideOfficial(c) {
+    if (c.kind !== 'soldes' || !c.starts || !c.ends) return false;
+    return !(state.salesOfficial || []).some(function (p) { return c.starts >= p.starts && c.ends <= p.ends; });
+  }
+  function renderSales() {
+    var box = $('#sales-form');
+    box.innerHTML = '<p class="muted">Chargement…</p>';
+    api('GET', '/api/admin/sales').then(function (d) {
+      state.salesOfficial = d.official;
+      state.salesDraft = JSON.parse(JSON.stringify(d.campaigns));
+      var fmt = function (p) { return p.starts.split('-').reverse().join('/') + ' → ' + p.ends.split('-').reverse().join('/'); };
+      $('#sales-info').innerHTML = '<p class="muted small">Prochaines périodes de soldes officielles : ' + d.official.filter(function (p) { return p.ends >= d.today; }).slice(0, 2).map(fmt).join(' · ') + '</p>';
+      box.innerHTML = '';
+      box.appendChild(listEl({ c: state.salesDraft }, {
+        k: 'c', label: '', addLabel: 'Créer une campagne',
+        itemTitle: function (c) { return (c.name || 'Nouvelle campagne') + ' · -' + (c.percent || 0) + ' % · ' + campaignStatus(c) + (outsideOfficial(c) ? ' · ⚠ hors période officielle de soldes' : ''); },
+        template: { name: '', kind: 'promotion', percent: 20, badge: '', scope: 'all', categories: [], products: [], starts: todayParis(), ends: '', banner: '', active: true },
+        fields: SALE_FIELDS
+      }));
+      if (!state.salesDraft.length) box.insertBefore(el('p', { class: 'empty', text: 'Aucune campagne. Exemple : « Promotion de rentrée », -20 % sur les polos, du 1er au 15 octobre.' }), box.firstChild);
+    }).catch(function (ex) { box.innerHTML = '<p class="error">' + esc(ex.message) + '</p>'; });
+  }
+
   /* ---------- Codes promo ---------- */
   var PROMO_FIELDS = [
     { k: 'code', label: 'Code (ce que le client saisit)', placeholder: 'ex. BIENVENUE10', help: 'Lettres, chiffres ou tirets. Majuscules et minuscules sont équivalentes.' },
@@ -1149,6 +1204,7 @@
     { k: 'categories', type: 'checks', label: 'Limiter à certaines catégories', help: 'Aucune case cochée = tout le catalogue.',
       options: function () { return state.catalog.categories.map(function (c) { return [c.slug, c.name]; }); } },
     { k: 'note', label: 'Note interne (facultatif)', placeholder: 'ex. offert aux clients de la boutique' },
+    { k: 'exclude_sale', type: 'bool', label: 'Ne pas appliquer aux articles déjà en promotion ou soldés' },
     { k: 'active', type: 'bool', label: 'Code actif' },
     { k: 'reset_uses', type: 'bool', label: 'Remettre le compteur d’utilisations à zéro' }
   ];
@@ -1216,6 +1272,9 @@
         catalog.categories = cats;
         req = api('PUT', '/api/admin/catalog', { catalog: catalog, what: 'Catégories' }).then(function (r) { state.catalog = catalog; return r; });
       }
+      if (what === 'sales') {
+        req = api('PUT', '/api/admin/sales', { campaigns: state.salesDraft });
+      }
       if (what === 'promos') {
         var bad = state.promosDraft.filter(function (p) { return !String(p.code || '').trim(); });
         if (bad.length) { toast('Chaque code promo doit avoir un nom (ex. BIENVENUE10).', true); return; }
@@ -1227,10 +1286,11 @@
         if (r.content) state.content = r.content;
         state.dirty = false;
         if (r.publish) setPublish(r.publish);
-        toast(what === 'promos' ? 'Codes promo enregistrés : ils sont actifs immédiatement.' : 'Enregistré. Cliquez sur « Publier » quand vous avez terminé vos modifications.');
+        toast(what === 'sales' ? 'Campagnes enregistrées : le panier applique déjà les nouveaux prix. Cliquez sur « Publier » pour mettre à jour l\u2019affichage du site.' : what === 'promos' ? 'Codes promo enregistrés : ils sont actifs immédiatement.' : 'Enregistré. Cliquez sur « Publier » quand vous avez terminé vos modifications.');
         if (what === 'categories') renderCategories();
         if (what === 'settings') renderSettings();
         if (what === 'promos') renderPromos();
+        if (what === 'sales') renderSales();
       }).catch(function (ex) { toast(ex.message, true); }).then(function () { btn.disabled = false; });
     });
   });

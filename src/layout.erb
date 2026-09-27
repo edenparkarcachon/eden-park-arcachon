@@ -43,6 +43,9 @@
 
   <div class="announce" role="note">
     <div class="announce__inner">
+<% campaign_banners.each do |msg| -%>
+      <span class="announce__sale"><%= h(tokens(msg)) %></span>
+<% end -%>
 <% CONTENT['announcement'].each do |msg| -%>
       <span><%= h(tokens(msg)) %></span>
 <% end -%>
@@ -57,6 +60,9 @@
           <div class="nav__dd-panel">
 <% shop_cats.each do |c| -%>
             <a href="<%= category_url(c) %>"><%= h(c['name']) %></a>
+<% end -%>
+<% unless on_sale_products.empty? -%>
+            <a href="/boutique/promotions/" style="color:var(--pink-deep)">Promotions</a>
 <% end -%>
             <a href="/boutique/">Tout voir</a>
           </div>

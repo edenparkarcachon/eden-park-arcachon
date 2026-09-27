@@ -121,6 +121,12 @@ export function validateCatalog(catalog) {
     if (!Array.isArray(p.colors) || !p.colors.length) return `Ajoutez au moins une couleur à « ${label} »`;
     if (!Array.isArray(p.sizes) || !p.sizes.length) return `Ajoutez au moins une taille à « ${label} »`;
     if (!Array.isArray(p.images)) return `Photos invalides pour « ${label} »`;
+    if (p.sale) {
+      const s = p.sale;
+      if (!Number.isInteger(s.price) || s.price <= 0 || s.price >= p.price) return `« ${label} » : le prix promotionnel doit être inférieur au prix normal`;
+      for (const d of [s.starts, s.ends]) if (d && !/^\d{4}-\d{2}-\d{2}$/.test(d)) return `« ${label} » : date de promotion invalide`;
+      if (s.starts && s.ends && s.starts > s.ends) return `« ${label} » : la fin de la promotion est avant son début`;
+    }
   }
   return null;
 }

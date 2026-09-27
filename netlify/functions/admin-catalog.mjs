@@ -6,6 +6,7 @@
 import { getCatalog, saveCatalog, getAllStock, getStock, setStock, deleteStock, validateCatalog, variantKey } from "../lib/catalog.mjs";
 import { json, isAuthorized, unauthorized } from "../lib/http.mjs";
 import { markPending } from "../lib/publish.mjs";
+import { recordPrices } from "../lib/pricing.mjs";
 
 // Fusionne les cases modifiées dans le stock existant, pour ne pas écraser un décompte
 // fait par une commande entre-temps. Valeur vide/null = variante non suivie.
@@ -49,6 +50,7 @@ export default async (req) => {
     if (error) return json(400, { error });
     const previous = await getCatalog();
     await saveCatalog(catalog);
+    await recordPrices(catalog); // historique des prix (prix de référence des promotions)
     // supprime le stock des produits retirés
     const kept = new Set(catalog.products.map((p) => p.slug));
     for (const p of previous.products) if (!kept.has(p.slug)) await deleteStock(p.slug);

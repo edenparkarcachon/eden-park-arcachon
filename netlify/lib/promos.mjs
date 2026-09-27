@@ -46,7 +46,7 @@ export function cleanPromos(input, current, categories) {
       code, type: p.type, percent: p.type === "percent" ? percent : 0, amount: p.type === "amount" ? amount : 0,
       min_order: min, starts: p.starts || "", ends: p.ends || "", max_uses: maxUses,
       uses: p.reset_uses ? 0 : (previous ? previous.uses || 0 : 0),
-      categories: cats, active: p.active !== false, note: String(p.note || "").slice(0, 200),
+      categories: cats, active: p.active !== false, note: String(p.note || "").slice(0, 200), exclude_sale: !!p.exclude_sale,
     });
   }
   return { promos: out };
@@ -65,9 +65,11 @@ export function evaluatePromo(promo, lines, now = today()) {
   if (promo.min_order && subtotal < promo.min_order) {
     return { error: `Ce code est valable dès ${(promo.min_order / 100).toLocaleString("fr-FR")} € d'achat` };
   }
-  const eligible = lines.filter((l) => !promo.categories.length || promo.categories.includes(l.category))
+  const eligible = lines.filter((l) => (!promo.categories.length || promo.categories.includes(l.category)) && !(promo.exclude_sale && l.onSale))
     .reduce((s, l) => s + l.price * l.qty, 0);
-  if (promo.type !== "shipping" && eligible === 0) return { error: "Ce code ne s'applique à aucun article de votre panier" };
+  if (promo.type !== "shipping" && eligible === 0) {
+    return { error: promo.exclude_sale && lines.some((l) => l.onSale) ? "Ce code ne s'applique pas aux articles déjà en promotion" : "Ce code ne s'applique à aucun article de votre panier" };
+  }
   let discount = 0;
   if (promo.type === "percent") discount = Math.round(eligible * promo.percent / 100);
   if (promo.type === "amount") discount = Math.min(promo.amount, eligible);

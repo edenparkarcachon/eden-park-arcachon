@@ -10,6 +10,15 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { store } from "../netlify/lib/store.mjs";
 import { publicReviews } from "../netlify/lib/reviews.mjs";
+import { computeOffers } from "../netlify/lib/pricing.mjs";
+
+// Soldes et promotions : toutes les réductions (avec prix barré légal) → data/pricing.json,
+// lues par build.rb et par le navigateur, qui choisit celle active à la date du jour.
+async function writePricing() {
+  const catalog = await readJSON("data/products.json");
+  const sales = await readJSON("data/sales.json").catch(() => ({ campaigns: [], history: {} }));
+  await writeJSON("data/pricing.json", computeOffers(catalog, sales.campaigns || [], sales.history || {}));
+}
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const IMG = path.join(ROOT, "src/assets/img");
@@ -38,7 +47,7 @@ function uploadedPaths(value, out = new Set()) {
 // strict : sur Netlify, un stockage inaccessible arrête le build (le site en ligne reste intact)
 export async function runSync({ strict = false } = {}) {
   let catalogStore, siteStore;
-  let catalog, settings, content, reviews;
+  let catalog, settings, content, reviews, campaigns, history;
   try {
     catalogStore = await store("catalog");
     siteStore = await store("site");
@@ -46,9 +55,12 @@ export async function runSync({ strict = false } = {}) {
     settings = await siteStore.get("settings", { type: "json" });
     content = await siteStore.get("content", { type: "json" });
     reviews = await (await store("reviews")).get("all", { type: "json" });
+    campaigns = await (await store("sales")).get("campaigns", { type: "json" });
+    history = await (await store("sales")).get("history", { type: "json" });
   } catch (e) {
     if (strict) throw new Error(`Stockage Netlify Blobs inaccessible (${e.message}) : build interrompu, le site en ligne n'est pas modifié.`);
     console.warn(`⚠ Stockage Netlify Blobs inaccessible (${e.message}) : utilisation des fichiers data/*.json`);
+    await writePricing();
     return;
   }
 
@@ -72,6 +84,11 @@ export async function runSync({ strict = false } = {}) {
   // avis publiés uniquement, sans e-mail
   if (reviews) await writeJSON("data/reviews.json", publicReviews(reviews));
   if (content) await writeJSON("data/content.json", { _note: (await readJSON("data/content.json"))._note, ...content });
+  if (campaigns || history) {
+    const current = await readJSON("data/sales.json").catch(() => ({}));
+    await writeJSON("data/sales.json", { campaigns: campaigns || current.campaigns || [], history: history || current.history || {} });
+  }
+  await writePricing();
 
   const images = await store("images");
   let count = 0;
@@ -84,7 +101,7 @@ export async function runSync({ strict = false } = {}) {
       else if (!(await fs.stat(path.join(IMG, path.dirname(rel), n)).catch(() => null))) console.warn(`⚠ Photo introuvable : ${n}`);
     }
   }
-  console.log(`Synchronisation depuis l'admin : catalogue ${catalog ? "✓" : "–"}, stock ${stockCount ? "✓" : "–"}, réglages ${settings ? "✓" : "–"}, pages ${content ? "✓" : "–"}, avis ${reviews ? "✓" : "–"}, ${count} photos.`);
+  console.log(`Synchronisation depuis l'admin : catalogue ${catalog ? "✓" : "–"}, stock ${stockCount ? "✓" : "–"}, réglages ${settings ? "✓" : "–"}, pages ${content ? "✓" : "–"}, avis ${reviews ? "✓" : "–"}, soldes ${campaigns ? "✓" : "–"}, ${count} photos.`);
 }
 
 // Lancé en ligne de commande (npm run build, serveur local)

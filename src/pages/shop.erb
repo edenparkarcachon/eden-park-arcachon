@@ -36,6 +36,12 @@
 <% end -%>
       </div>
 <% end -%>
+<% if items.any? { |p| active_offer(p) } && !(category && category['slug'] == 'promotions') -%>
+      <fieldset class="filter">
+        <legend>Offres</legend>
+        <label class="check"><input type="checkbox" name="sale" value="1"> <span>En promotion (<%= items.count { |p| active_offer(p) } %>)</span></label>
+      </fieldset>
+<% end -%>
       <fieldset class="filter">
         <legend>Taille</legend>
         <div class="chips">

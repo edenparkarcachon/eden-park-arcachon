@@ -11,6 +11,7 @@
 import { getCatalog, getStock, isBackorder, getSite, backorderDays } from "../lib/catalog.mjs";
 import { json } from "../lib/http.mjs";
 import { findPromo, evaluatePromo } from "../lib/promos.mjs";
+import { getOffers, effectivePrice } from "../lib/pricing.mjs";
 
 const DOMTOM = ["GP", "MQ", "GF", "RE", "YT", "PM", "BL", "MF", "WF", "PF", "NC"];
 const MAX_QTY = 10;
@@ -45,6 +46,7 @@ export async function buildSession(payload, siteUrl) {
   const catalog = await getCatalog();
   const site = await getSite();
   const BACKORDER_DAYS = backorderDays(site);
+  const offers = await getOffers(catalog); // soldes et promotions en cours
 
   const lineItems = [];
   const metadata = { mode_livraison: zone };
@@ -59,18 +61,19 @@ export async function buildSession(payload, siteUrl) {
     }
     const late = isBackorder(await getStock(p.slug), it.color, it.size, qty);
     backorder = backorder || late;
-    subtotal += p.price * qty;
-    promoLines.push({ price: p.price, qty, category: p.category });
+    const eff = effectivePrice(p, offers);
+    subtotal += eff.price * qty;
+    promoLines.push({ price: eff.price, qty, category: p.category, onSale: !!eff.offer });
     const photo = p.images.find((im) => im.src && !im.placeholder);
     const name = p.name.replace(/[«»]/g, "").replace(/\s+/g, " ").trim();
     lineItems.push({
       quantity: qty,
       price_data: {
         currency: "eur",
-        unit_amount: p.price,
+        unit_amount: eff.price,
         tax_behavior: "inclusive",
         product_data: {
-          name: `${name} – ${it.color}${it.size !== "Taille unique" ? ` – ${it.size}` : ""}${late ? " (sur commande)" : ""}`,
+          name: `${name} – ${it.color}${it.size !== "Taille unique" ? ` – ${it.size}` : ""}${eff.offer ? ` (${eff.offer.label}${eff.offer.percent ? ` -${eff.offer.percent} %` : ""})` : ""}${late ? " (sur commande)" : ""}`,
           images: photo ? [`${siteUrl}/assets/img/${photo.src}`] : undefined,
           metadata: { slug: p.slug, couleur: it.color, taille: it.size },
         },

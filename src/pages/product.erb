@@ -16,10 +16,11 @@
   <div class="pinfo">
     <p class="eyebrow"><a href="<%= category_url(c) %>" style="text-decoration:none"><%= h(c['name']) %></a> · Eden Park Arcachon</p>
     <h1><%= h(p['name']) %></h1>
-    <p class="pinfo__price"><%= euro(p['price']) %></p>
+    <%= price_html(p, 'page') %>
 <% if rating_of(p) -%>
     <a class="rating-link" href="#avis"><%= stars(rating_of(p)) %> <span><%= rating_of(p).to_s.sub('.', ',') %>/5 · <%= reviews_for(p).size %> avis</span></a>
 <% end -%>
+    <p class="sale-note" data-sale-note="<%= p['slug'] %>"><%= h(sale_note(active_offer(p))) %></p>
     <p class="pinfo__tax">TTC · Livraison offerte dès <%= euro(SITE['shipping']['free_threshold']) %></p>
     <p class="pinfo__short"><%= h(p['short']) %></p>
 

@@ -422,6 +422,69 @@ await test("articles : nouvel article long (plus de 5 000 caractères) accepté"
   assert.equal((await adminContent(req("/admin/content", "PUT", { content: c }, auth()))).status, 200);
 });
 
+console.log("Soldes & promotions");
+const pricing = await import("../netlify/lib/pricing.mjs");
+const adminSales = (await import("../netlify/functions/admin-sales.mjs")).default;
+const { boundaryToday } = await import("../netlify/functions/sales-scheduler.mjs");
+const miniCat = { categories: [{ slug: "polos" }], products: [{ slug: "polo", category: "polos", price: 11900 }] };
+await test("prix de référence : prix le plus bas des 30 jours précédant la réduction", () => {
+  const h = [{ price: 12900, from: "2026-08-01" }, { price: 11900, from: "2026-09-20" }];
+  assert.equal(pricing.referencePrice(h, 11900, "2026-10-01"), 11900, "baisse à 119 € le 20/09 → référence 119 €");
+  assert.equal(pricing.referencePrice(h, 11900, "2026-09-15"), 12900, "avant la baisse → référence 129 €");
+  assert.equal(pricing.referencePrice([], 11900, "2026-10-01"), 11900, "sans historique → prix actuel");
+});
+await test("campagne -20 % : prix réduit, prix barré et pourcentage", () => {
+  const camp = [{ id: "a", active: true, scope: "all", percent: 20, kind: "promotion", starts: "2026-10-01", ends: "2026-10-15" }];
+  const offers = pricing.computeOffers(miniCat, camp, {}, "2026-09-27");
+  const o = pricing.activeOffer(offers.polo, "2026-10-05");
+  assert.deepEqual([o.price, o.ref, o.percent], [9520, 11900, 20]);
+  assert.equal(pricing.activeOffer(offers.polo, "2026-09-30"), null, "pas encore commencée");
+  assert.equal(pricing.activeOffer(offers.polo, "2026-10-16"), null, "terminée (fin incluse le 15)");
+  assert.ok(pricing.activeOffer(offers.polo, "2026-10-15"), "le dernier jour est inclus");
+});
+await test("pas de fausse réduction : prix de référence inférieur → pas de prix barré", () => {
+  // le prix normal était de 90 € dans les 30 jours → une « promo » à 95 € n'est pas une réduction
+  const h = { polo: [{ price: 9000, from: "2026-09-01" }, { price: 11900, from: "2026-09-25" }] };
+  const offers = pricing.computeOffers({ ...miniCat, products: [{ slug: "polo", category: "polos", price: 11900, sale: { price: 9500, starts: "2026-10-01", ends: "" } }] }, [], h);
+  assert.equal(offers.polo[0].ref, null);
+  assert.equal(offers.polo[0].percent, 0);
+});
+await test("meilleure réduction retenue, jamais de cumul (promo produit vs campagne)", () => {
+  const cat = { ...miniCat, products: [{ slug: "polo", category: "polos", price: 11900, sale: { price: 9900 } }] };
+  const offers = pricing.computeOffers(cat, [{ id: "b", active: true, scope: "categories", categories: ["polos"], percent: 30, kind: "soldes", starts: "2026-01-01", ends: "2026-12-31" }], {});
+  assert.equal(pricing.effectivePrice(cat.products[0], offers, "2026-06-01").price, 8330);
+});
+await test("campagnes invalides refusées ; valides enregistrées et mises en attente de publication", async () => {
+  for (const bad of [[{ name: "", percent: 10, kind: "promotion", scope: "all", starts: "2026-10-01", ends: "2026-10-02" }], [{ name: "X", percent: 95, kind: "promotion", scope: "all", starts: "2026-10-01", ends: "2026-10-02" }], [{ name: "X", percent: 10, kind: "promotion", scope: "categories", categories: [], starts: "2026-10-01", ends: "2026-10-02" }], [{ name: "X", percent: 10, kind: "promotion", scope: "all", starts: "2026-10-05", ends: "2026-10-02" }]]) {
+    assert.equal((await adminSales(req("/admin/sales", "PUT", { campaigns: bad }, auth()))).status, 400, JSON.stringify(bad));
+  }
+  const today = pricing.parisDate();
+  const r = await adminSales(req("/admin/sales", "PUT", { campaigns: [{ name: "Promo polos", kind: "promotion", percent: 20, scope: "categories", categories: ["polos"], starts: today, ends: "2099-12-31", banner: "-20 % sur les polos", active: true }] }, auth()));
+  assert.equal(r.status, 200);
+  assert.ok((await r.json()).publish.pending.some((p) => p.what === "Soldes & promotions"));
+});
+await test("paiement : le prix soldé est facturé ; un code « hors promotions » ne s'y applique pas", async () => {
+  const s = await buildSession({ items: polo("S", 1), zone: "metro" }, "https://x.fr");
+  assert.equal(s.params.line_items[0].price_data.unit_amount, 9520);
+  assert.match(s.params.line_items[0].price_data.product_data.name, /-20 %/);
+  const list = (await (await adminPromos(req("/admin/promos", "GET", undefined, auth()))).json()).promos;
+  list.push({ code: "HORSPROMO", type: "percent", percent: 10, exclude_sale: true, active: true });
+  await adminPromos(req("/admin/promos", "PUT", { promos: list }, auth()));
+  const res = await promoFn(req("/promo", "POST", { code: "HORSPROMO", items: polo("S", 1) }));
+  assert.match((await res.json()).error, /déjà en promotion/);
+});
+await test("tâche planifiée : mise à jour du site seulement le jour d'un début ou le lendemain d'une fin", () => {
+  const offers = { polo: [{ starts: "2026-10-01", ends: "2026-10-15" }] };
+  assert.equal(boundaryToday(offers, "2026-10-01"), true);
+  assert.equal(boundaryToday(offers, "2026-10-16"), true);
+  assert.equal(boundaryToday(offers, "2026-10-10"), false);
+});
+await test("dates officielles des soldes 2027 (2e mercredi de janvier, dernier mercredi de juin)", () => {
+  const [hiver, ete] = pricing.officialSalesPeriods(2027);
+  assert.equal(hiver.starts, "2027-01-13");
+  assert.equal(ete.starts, "2027-06-30");
+});
+
 console.log("Suppression");
 await test("produit supprimé → son stock aussi", async () => {
   const c = structuredClone(catalog);
