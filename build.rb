@@ -344,6 +344,17 @@ def bow(cls: "logo__bow")
   %(<img class="#{cls}" src="/assets/img/noeud-eden-park.png" width="160" height="66" alt="" aria-hidden="true">)
 end
 
+# Mesure d'audience : active seulement si un vrai identifiant Google Analytics est renseigné
+def analytics_on?
+  SITE["analytics_id"].to_s.match?(/\AG-[A-Z0-9]{4,}\z/) && !SITE["analytics_id"].include?("XXXX")
+end
+
+# Médiateur de la consommation (formule neutre tant qu'aucun médiateur n'est désigné)
+def mediator_text
+  m = SITE["legal"]["mediator"].to_s.strip
+  m.empty? ? "le médiateur de la consommation désigné par le Vendeur, dont les coordonnées sont communiquées au Client sur simple demande" : m
+end
+
 # Logo officiel Eden Park Paris, reproduit sans modification (annexe 5, § 4.1).
 def logo(variant: :bleu)
   file = variant == :blanc ? "logo-eden-park-blanc.png" : "logo-eden-park.png"
@@ -742,7 +753,7 @@ js_catalog = {
   "backorderDays" => SITE["shipping"]["backorder_days"],
   "gift" => SITE["gift"] || { "enabled" => false },
   "stock" => STOCK,
-  "analyticsId" => SITE["analytics_id"],
+  "analyticsId" => analytics_on? ? SITE["analytics_id"] : "",
   "products" => PRODUCTS.map do |p|
     imgs = product_images(p)
     { "slug" => p["slug"], "name" => p["name"], "price" => p["price"], "url" => product_url(p), "offers" => PRICING[p["slug"]] || [],
@@ -770,7 +781,7 @@ featured = PRODUCTS.select { |p| p["featured"] }.sort_by { |p| -p["popularity"] 
 write_page(PageContext.new(
   path: "/",
   title: "Eden Park Arcachon – Boutique en ligne Bassin d'Arcachon",
-  description: "Polos, t-shirts, sweats et casquettes Eden Park brodés Bassin d'Arcachon, créés par la boutique d'Arcachon. Livraison offerte dès #{euro(SITE["shipping"]["free_threshold"])}, retrait en boutique.",
+  description: "Polos et casquettes Eden Park brodés Bassin d'Arcachon, créés par la boutique d'Arcachon. Livraison offerte dès #{euro(SITE["shipping"]["free_threshold"])}, retrait en boutique.",
   image: "/assets/img/og-eden-park-arcachon.jpg",
   schemas: [store_schema, website_schema],
   locals: { "featured" => featured }
@@ -780,14 +791,14 @@ write_page(PageContext.new(
 write_page(PageContext.new(
   path: "/boutique/",
   title: "Boutique en ligne – Collection Bassin | Eden Park Arcachon",
-  description: "Polos, t-shirts, sweats et casquettes Eden Park brodés aux emblèmes du Bassin d'Arcachon. Paiement sécurisé, livraison France & DOM-TOM.",
+  description: "Polos et casquettes Eden Park brodés aux emblèmes du Bassin d'Arcachon. Paiement sécurisé, livraison France & DOM-TOM.",
   crumbs: [crumb_home, crumb_shop],
   schemas: [breadcrumb_schema([crumb_home, crumb_shop])],
   locals: { "category" => nil, "items" => PRODUCTS.sort_by { |p| -p["popularity"] } }
 ), "pages/shop.erb")
 
-# Catégories
-CATS.each do |c|
+# Catégories (les catégories vides ne génèrent pas de page)
+shop_cats.each do |c|
   items = PRODUCTS.select { |p| p["category"] == c["slug"] }.sort_by { |p| -p["popularity"] }
   crumbs = [crumb_home, crumb_shop, [c["name"], category_url(c)]]
   list = { "@context" => "https://schema.org", "@type" => "ItemList", "name" => c["title"],
@@ -1003,8 +1014,7 @@ TXT
 # Récapitulatif des éléments provisoires
 puts "Site généré dans dist/ (#{PAGES.size} pages indexables, version #{ASSET_VERSION})."
 puts
-puts "Éléments PROVISOIRES à confirmer :"
+puts "Éléments à compléter :"
 PRODUCTS.each { |p| puts "  - #{p['name']} : #{p['provisional'].join(', ')}" if p["provisional"] && !p["provisional"].empty? }
 puts "  - E-mail de contact (#{SITE['email']})" if SITE["email_provisional"]
-puts "  - Médiateur de la consommation (data/site.json > legal)" if SITE["legal"]["mediator"].to_s.include?("PROVISOIRE")
-puts "  - Identifiant Google Analytics (#{SITE['analytics_id']})" if SITE["analytics_id"].include?("XXXX")
+puts "  - Médiateur de la consommation (data/site.json > legal)" if SITE["legal"]["mediator"].to_s.strip.empty?

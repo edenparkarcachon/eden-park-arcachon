@@ -4,7 +4,7 @@
   <div class="wrap prose">
     <h2>Éditeur du site</h2>
     <p>Le site <strong>edenpark-arcachon.fr</strong> est édité par :</p>
-    <p><strong><%= h(l['company']) %></strong>, <%= h(l['form']) %> au capital de <span class="<%= 'todo' if l['capital'].include?('PROVISOIRE') %>"><%= h(l['capital']) %></span><br>
+    <p><strong><%= h(l['company']) %></strong>, <%= h(l['form']) %> au capital de <%= h(l['capital']) %><br>
       Nom commercial : Eden Park Arcachon<br>
       Siège social : <%= h(SITE['address']['street']) %>, <%= SITE['address']['postal_code'] %> <%= h(SITE['address']['city']) %>, France<br>
       <%= h(l['rcs']) %> – SIRET <%= h(l['siret']) %><br>
@@ -24,7 +24,7 @@
     <p>Les données personnelles collectées sur ce site sont traitées conformément au Règlement général sur la protection des données (RGPD) et à la loi Informatique et Libertés. Pour en savoir plus, consultez notre <a href="/confidentialite/">politique de confidentialité</a> et notre <a href="/cookies/">politique de cookies</a>.</p>
 
     <h2>Médiation de la consommation</h2>
-    <p>Conformément aux articles L611-1 et suivants du Code de la consommation, en cas de litige non résolu avec notre service client, vous pouvez recourir gratuitement au médiateur de la consommation suivant : <span class="<%= 'todo' if l['mediator'].include?('PROVISOIRE') %>"><%= h(l['mediator']) %></span>.</p>
+    <p>Conformément aux articles L611-1 et suivants du Code de la consommation, en cas de litige non résolu avec notre service client, vous pouvez recourir gratuitement à <%= h(mediator_text) %>.</p>
 
     <h2>Crédits</h2>
     <p>Photographies : Eden Park Arcachon. Conception du site : Eden Park Arcachon.</p>

@@ -57,7 +57,7 @@ let catalog;
 await test("lecture du catalogue initial (data/products.json)", async () => {
   const r = await adminCatalog(req("/admin/catalog", "GET", undefined, auth()));
   catalog = (await r.json()).catalog;
-  assert.equal(catalog.products.length, 6);
+  assert.equal(catalog.products.length, 3);
 });
 await test("catalogue invalide refusé (adresse en double)", async () => {
   const bad = structuredClone(catalog);

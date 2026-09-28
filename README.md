@@ -163,14 +163,10 @@ npm test
 
 | Élément | Où |
 |---|---|
-| Prix, tailles et compositions exactes des produits | `data/products.json` |
-| T-shirts et sweat : confirmer les modèles et fournir les photos | `data/products.json` + `src/assets/img/produits/` |
-| E-mail de la boutique (edenproarcachon@gmail.com) | `data/site.json` → `email` |
-| Capital social de MAMIL27 | `data/site.json` → `legal.capital` |
-| Médiateur de la consommation (obligatoire) | `data/site.json` → `legal.mediator` |
-| Identifiant Google Analytics | `data/site.json` → `analytics_id` |
+| Prix, tailles, compositions et références exactes des produits (2 photos minimum) | admin → Produits |
+| Médiateur de la consommation (obligatoire ; formule neutre affichée tant qu'il est vide) | admin → Réglages, ou `data/site.json` → `legal.mediator` |
 | Relecture des CGV / mentions légales par un professionnel du droit | `src/pages/cgv.erb`, `mentions.erb`, `confidentialite.erb` |
-| Logo officiel Eden Park en vectoriel (le logo actuel est une recréation) | `build.rb` → fonction `logo` ; `src/assets/img/logo-eden-park-arcachon.png` |
+| Mesure d'audience (facultatif) : saisir un identifiant Google Analytics active le bandeau cookies | admin → Réglages |
 
 ## Référencement (SEO) déjà en place
 

@@ -2,8 +2,6 @@
 <header class="page-head page-head--sand"><div class="wrap"><h1>Conditions générales de vente</h1><p class="lead">En vigueur au <%= Date.today.strftime('%d/%m/%Y') %></p></div></header>
 <section class="section" style="padding-top:40px">
   <div class="wrap prose">
-    <div class="notice">Document type à faire valider par un professionnel du droit avant la mise en ligne.</div>
-
     <h2>Article 1 – Objet et champ d'application</h2>
     <p>Les présentes conditions générales de vente (CGV) définissent les conditions de la vente à distance, sur le site edenpark-arcachon.fr (ci-après « le Site »), des produits de la marque Eden Park proposés par la société <strong><%= h(l['company']) %></strong>, <%= h(l['form']) %> au capital de <%= h(l['capital']) %>, immatriculée au <%= h(l['rcs']) %>, dont le siège est situé <%= adr %> (ci-après « Eden Park Arcachon » ou « le Vendeur »). Elles couvrent la commande, le paiement, la livraison, les retours et le service après-vente.</p>
     <p>Eden Park Arcachon est une boutique franchisée indépendante, exploitée par <%= h(l['company']) %> sous l'enseigne Eden Park. Le Site est le prolongement sur internet de la boutique d'Arcachon ; il est distinct du site officiel de la marque, eden-park.com, dont l'exploitant n'est pas partie aux ventes conclues sur le Site.</p>
@@ -83,7 +81,7 @@
 
     <h2>Article 16 – Réclamations, médiation et droit applicable</h2>
     <p>En cas de réclamation, le Client peut contacter le service client du lundi au samedi au <%= h(SITE['phone']) %> ou à <a href="mailto:<%= h(SITE['email']) %>"><%= h(SITE['email']) %></a>. Les parties rechercheront en priorité une solution amiable.</p>
-    <p>À défaut de solution amiable dans un délai raisonnable, le Client peut recourir gratuitement, dans un délai d'un an à compter de sa réclamation écrite, au médiateur de la consommation : <span class="<%= 'todo' if l['mediator'].include?('PROVISOIRE') %>"><%= h(l['mediator']) %></span>.</p>
+    <p>À défaut de solution amiable dans un délai raisonnable, le Client peut recourir gratuitement, dans un délai d'un an à compter de sa réclamation écrite, à <%= h(mediator_text) %>.</p>
     <p>Les présentes CGV sont soumises au droit français. À défaut de règlement amiable, les tribunaux français sont compétents dans les conditions de droit commun.</p>
   </div>
 </section>

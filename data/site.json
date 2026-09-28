@@ -1,9 +1,9 @@
 {
-  "_note": "Informations de la boutique. Les champs marqués PROVISOIRE sont à confirmer par Matthieu avant la mise en ligne.",
+  "_note": "Informations de la boutique, modifiables depuis l'admin (onglet Réglages).",
   "name": "Eden Park Arcachon",
   "url": "https://edenpark-arcachon.fr",
   "tagline": "L'élégance au cœur du Bassin",
-  "description": "Boutique Eden Park d'Arcachon : polos, t-shirts, sweats et casquettes brodés aux couleurs du Bassin d'Arcachon. Collection exclusive, livraison en France et DOM-TOM, retrait gratuit en boutique.",
+  "description": "Boutique Eden Park d'Arcachon : polos et casquettes brodés aux couleurs du Bassin d'Arcachon. Collection exclusive, livraison en France et DOM-TOM, retrait gratuit en boutique.",
   "phone": "09 77 31 88 06",
   "phone_intl": "+33977318806",
   "email": "edenproarcachon@gmail.com",
@@ -71,7 +71,7 @@
     "director": "Matthieu Lapeyrere",
     "director_title": "Président",
     "host": "Netlify, Inc. – 512 2nd Street, Suite 200, San Francisco, CA 94107, États-Unis – www.netlify.com",
-    "mediator": "[PROVISOIRE – nom et coordonnées du médiateur de la consommation à compléter]"
+    "mediator": ""
   },
   "shipping": {
     "metro_price": 690,
@@ -83,7 +83,7 @@
     "carrier": "Colissimo"
   },
   "return_days": 30,
-  "analytics_id": "G-XXXXXXXXXX",
+  "analytics_id": "",
   "gift": {
     "enabled": true,
     "price": 0,

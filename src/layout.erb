@@ -144,7 +144,9 @@
         <li><a href="/cgv/">CGV</a></li>
         <li><a href="/confidentialite/">Confidentialité</a></li>
         <li><a href="/cookies/">Cookies</a></li>
+<% if analytics_on? -%>
         <li><button type="button" data-cookie-prefs>Gérer les cookies</button></li>
+<% end -%>
       </ul>
     </div>
   </footer>
@@ -202,7 +204,8 @@
     </div>
   </div>
 
-  <!-- Bandeau cookies (RGPD) -->
+<% if analytics_on? -%>
+  <!-- Bandeau cookies (RGPD) : affiché seulement si la mesure d'audience est active -->
   <div class="cookie" id="cookie" role="dialog" aria-labelledby="cookie-title" aria-live="polite">
     <h2 id="cookie-title">Votre vie privée, notre priorité</h2>
     <p>Nous utilisons des cookies nécessaires au fonctionnement du site (panier, préférences) et, avec votre accord, des cookies de mesure d'audience pour améliorer votre expérience. Votre choix est conservé 12 mois. <a href="/cookies/">En savoir plus</a></p>
@@ -216,6 +219,7 @@
       <button class="btn" type="button" data-cookie="accept">Tout accepter</button>
     </div>
   </div>
+<% end -%>
 
   <script src="<%= asset('js/catalog.js') %>" defer></script>
   <script src="<%= asset('js/main.js') %>" defer></script>

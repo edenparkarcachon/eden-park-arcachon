@@ -11,7 +11,7 @@
       "eyebrow": "Collection exclusive · Boutique d'Arcachon",
       "title": "Eden Park Arcachon",
       "accent": "l'élégance au cœur du Bassin",
-      "text": "Polos, t-shirts, sweats et casquettes brodés aux emblèmes du Bassin d'Arcachon : la Dune du Pyla, la queue de baleine de la jetée Thiers… Imaginés dans notre boutique du boulevard de la Plage, livrés partout en France.",
+      "text": "Polos et casquettes brodés aux emblèmes du Bassin d'Arcachon : la Dune du Pyla, la queue de baleine de la jetée Thiers… Imaginés dans notre boutique du boulevard de la Plage, livrés partout en France.",
       "image": {
         "src": "produits/casquette-bassin-arcachon-ecusson-rose.jpg",
         "alt": "Polo Dune du Pyla et casquette Bassin d'Arcachon Eden Park portés face au Bassin"
@@ -64,7 +64,7 @@
       "lead": "Entreprise du Bassin, club, association, mariage ou événement : la boutique d'Arcachon imagine avec vous une personnalisation Eden Park à votre image.",
       "points": [
         "Accompagnement en boutique, du dessin au choix des fils",
-        "Polos, sweats, t-shirts et casquettes Eden Park",
+        "Polos et casquettes Eden Park",
         "Petites et moyennes séries"
       ],
       "button_label": "Demander un devis",
@@ -139,7 +139,7 @@
       "paragraphs": [
         "Tout est parti d'une envie simple : offrir à nos clients, Arcachonnais de toujours comme amoureux de passage, un Eden Park qui leur rappelle le Bassin.",
         "Nous avons d'abord personnalisé un polo avec la queue de baleine de la jetée Thiers. Puis est venu le modèle « Dune du Pyla », brodé de la silhouette de la dune et signé au dos d'une phrase qui nous ressemble : « L'élégance au cœur du Bassin ».",
-        "La casquette à écusson, le t-shirt et le sweat complètent aujourd'hui cette collection, qui continuera de s'agrandir au fil des saisons."
+        "La casquette à écusson complète aujourd'hui cette collection, qui continuera de s'agrandir au fil des saisons."
       ],
       "tag": "Brodé à Arcachon",
       "image": {
@@ -331,7 +331,7 @@
         ]
       }
     ],
-    "size_intro": "Nos polos, t-shirts et sweats reprennent le guide des tailles de la marque Eden Park (hauts homme). Mesurez votre tour de poitrine sous les bras, à l’endroit le plus large, et votre tour de taille au niveau du nombril.",
+    "size_intro": "Nos polos reprennent le guide des tailles de la marque Eden Park (hauts homme). Mesurez votre tour de poitrine sous les bras, à l’endroit le plus large, et votre tour de taille au niveau du nombril.",
     "size_note": "Casquettes : taille unique, réglable grâce à la patte de serrage arrière."
   },
   "journal_intro": {
