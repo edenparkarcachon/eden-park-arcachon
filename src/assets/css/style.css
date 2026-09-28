@@ -141,9 +141,9 @@ ul, ol { padding-left: 1.2em; }
 .header__inner { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; height: var(--header-h); }
 .logo { display: inline-flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--navy-950); line-height: 1; }
 .logo:hover { color: var(--navy-950); }
-.logo__word { display: inline-flex; align-items: center; gap: 7px; font-size: 1.62rem; font-weight: 600; letter-spacing: -.01em; }
+.logo__img { display: block; height: 42px; width: auto; }
 .logo__bow { width: 30px; height: auto; }
-.logo__sub { margin-top: 5px; font-size: .56rem; font-weight: 600; letter-spacing: .5em; padding-left: .5em; }
+.logo__sub { margin-top: 6px; font-size: .56rem; font-weight: 600; letter-spacing: .32em; text-transform: uppercase; padding-left: .32em; }
 .nav { display: flex; gap: 28px; align-items: center; }
 .nav a, .nav button { font-size: .76rem; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; text-decoration: none; background: none; border: 0; padding: 8px 0; cursor: pointer; position: relative; }
 .nav a::after { content: ""; position: absolute; left: 0; right: 0; bottom: 2px; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform .3s var(--ease); }
@@ -168,7 +168,7 @@ ul, ol { padding-left: 1.2em; }
   .nav--right .nav__link { display: none; }
   .burger { display: inline-grid; }
   .logo { justify-self: center; }
-  .logo__word { font-size: 1.35rem; }
+  .logo__img { height: 34px; }
   .logo__bow { width: 25px; }
 }
 
@@ -505,6 +505,8 @@ dialog::backdrop { background: rgba(2,10,31,.5); }
 .footer ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
 .footer .logo { color: #fff; align-items: flex-start; margin-bottom: 18px; }
 .footer .logo__sub { padding-left: 0; }
+.footer .logo__img { height: 38px; }
+.footer__bottom a { color: inherit; text-decoration: underline; }
 .footer address { font-style: normal; line-height: 1.7; }
 .socials { display: flex; gap: 10px; margin-top: 18px; }
 .socials a { display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid rgba(255,255,255,.25); border-radius: 50%; }
@@ -534,7 +536,7 @@ dialog::backdrop { background: rgba(2,10,31,.5); }
 /* ---------- Divers ---------- */
 .bow-sep { display: flex; align-items: center; justify-content: center; gap: 18px; color: var(--pink); margin: 0 auto 26px; }
 .bow-sep::before, .bow-sep::after { content: ""; width: 48px; height: 1px; background: var(--line); }
-.bow-sep svg { width: 34px; }
+.bow-sep svg, .bow-sep img { width: 40px; height: auto; }
 .quote { font-family: var(--font-accent); font-style: italic; font-size: clamp(1.6rem, 3.2vw, 2.4rem); line-height: 1.3; color: var(--navy-900); max-width: 30ch; margin: 0 auto; }
 .fade-up { opacity: 0; transform: translateY(18px); transition: opacity .8s var(--ease), transform .8s var(--ease); }
 .fade-up.is-in { opacity: 1; transform: none; }

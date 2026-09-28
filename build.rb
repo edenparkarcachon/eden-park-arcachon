@@ -339,13 +339,15 @@ def icon(name, cls: nil)
   %(<svg#{c} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">#{ICONS.fetch(name)}</svg>)
 end
 
+# Nœud papillon officiel, découpé tel quel dans le logo fourni par la marque.
 def bow(cls: "logo__bow")
-  %(<svg class="#{cls}" viewBox="0 0 40 20" aria-hidden="true"><path d="M2 3.2c0-1.4 1-2.1 2.3-1.6L17 7v6L4.3 18.4C3 18.9 2 18.2 2 16.8z" fill="#f3b9cb"/><path d="M38 3.2c0-1.4-1-2.1-2.3-1.6L23 7v6l12.7 5.4c1.3.5 2.3-.2 2.3-1.6z" fill="#f3b9cb"/><rect x="16.5" y="5.8" width="7" height="8.4" rx="1.6" fill="#e79ab3"/><circle cx="8" cy="10" r="1.1" fill="#16213d" opacity=".55"/><circle cx="32" cy="10" r="1.1" fill="#16213d" opacity=".55"/></svg>)
+  %(<img class="#{cls}" src="/assets/img/noeud-eden-park.png" width="160" height="66" alt="" aria-hidden="true">)
 end
 
-def logo(tag: "a")
-  inner = %(<span class="logo__word">Eden #{bow} Park</span><span class="logo__sub">ARCACHON</span>)
-  %(<a class="logo" href="/" aria-label="Eden Park Arcachon – accueil">#{inner}</a>)
+# Logo officiel Eden Park Paris, reproduit sans modification (annexe 5, § 4.1).
+def logo(variant: :bleu)
+  file = variant == :blanc ? "logo-eden-park-blanc.png" : "logo-eden-park.png"
+  %(<a class="logo" href="/" aria-label="Eden Park Arcachon – accueil"><img class="logo__img" src="/assets/img/#{file}" width="720" height="162" alt="Eden Park Paris"><span class="logo__sub">Boutique d'Arcachon</span></a>)
 end
 
 EMBLEMS = {
@@ -526,7 +528,8 @@ def product_schema(p)
     "@context" => "https://schema.org",
     "@type" => "Product",
     "name" => "#{p['name'].gsub(/[«»]/, '').squeeze(' ').strip} – Eden Park Arcachon",
-    "sku" => "EPA-#{p['slug'].upcase}",
+    "sku" => p["reference"].to_s.empty? ? "EPA-#{p['slug'].upcase}" : p["reference"],
+    "mpn" => p["reference"].to_s.empty? ? nil : p["reference"],
     "description" => p["description"].join(" "),
     "image" => imgs.empty? ? nil : imgs,
     "brand" => { "@type" => "Brand", "name" => "Eden Park" },
@@ -949,7 +952,7 @@ feed_items = PRODUCTS.flat_map do |p|
     <<~ITEM
       <item>
         <g:id>#{xml(slugify("#{p['slug']}-#{c['name']}-#{sz}"))}</g:id>
-        <g:item_group_id>#{xml(p['slug'])}</g:item_group_id>
+        <g:item_group_id>#{xml(p['slug'])}</g:item_group_id>#{p['reference'].to_s.empty? ? '' : "\n        <g:mpn>#{xml(p['reference'])}</g:mpn>"}
         <g:title>#{xml("#{plain} Eden Park – #{c['name']}#{sz == 'Taille unique' ? '' : " – taille #{sz}"}")}</g:title>
         <g:description>#{xml(p['description'].join(' '))}</g:description>
         <g:link>#{xml(abs_url(product_url(p)))}</g:link>
@@ -1003,5 +1006,5 @@ puts
 puts "Éléments PROVISOIRES à confirmer :"
 PRODUCTS.each { |p| puts "  - #{p['name']} : #{p['provisional'].join(', ')}" if p["provisional"] && !p["provisional"].empty? }
 puts "  - E-mail de contact (#{SITE['email']})" if SITE["email_provisional"]
-puts "  - Capital social, médiateur de la consommation (data/site.json > legal)"
+puts "  - Médiateur de la consommation (data/site.json > legal)" if SITE["legal"]["mediator"].to_s.include?("PROVISOIRE")
 puts "  - Identifiant Google Analytics (#{SITE['analytics_id']})" if SITE["analytics_id"].include?("XXXX")

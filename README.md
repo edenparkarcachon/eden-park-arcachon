@@ -165,7 +165,7 @@ npm test
 |---|---|
 | Prix, tailles et compositions exactes des produits | `data/products.json` |
 | T-shirts et sweat : confirmer les modèles et fournir les photos | `data/products.json` + `src/assets/img/produits/` |
-| E-mail de contact (provisoire : contact@edenpark-arcachon.fr) | `data/site.json` → `email` |
+| E-mail de la boutique (edenproarcachon@gmail.com) | `data/site.json` → `email` |
 | Capital social de MAMIL27 | `data/site.json` → `legal.capital` |
 | Médiateur de la consommation (obligatoire) | `data/site.json` → `legal.mediator` |
 | Identifiant Google Analytics | `data/site.json` → `analytics_id` |

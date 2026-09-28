@@ -287,6 +287,10 @@
             "a": "Le plus simple est de passer à la boutique d’Arcachon. Sinon, contactez-nous avec votre numéro de commande : nous vous indiquerons la marche à suivre pour un retour, puis vous pourrez repasser commande dans la bonne taille."
           },
           {
+            "q": "Puis-je retourner un article dans une autre boutique Eden Park ?",
+            "a": "Non. Les articles achetés sur ce site se retournent ou s’échangent uniquement auprès d’Eden Park Arcachon : à la boutique du boulevard de la Plage ou par voie postale à la même adresse. Les autres boutiques et sites de la marque ne peuvent pas les reprendre."
+          },
+          {
             "q": "Quand serai-je remboursé ?",
             "a": "Le remboursement est effectué sous 14 jours maximum après réception de l’article retourné, sur le moyen de paiement utilisé lors de la commande."
           }

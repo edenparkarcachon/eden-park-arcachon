@@ -27,7 +27,6 @@
   <meta property="og:image" content="<%= abs_url(image || '/assets/img/og-eden-park-arcachon.jpg') %>">
   <meta name="twitter:card" content="summary_large_image">
 
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
@@ -95,7 +94,7 @@
   <footer class="footer">
     <div class="wrap footer__grid">
       <div>
-        <%= logo %>
+        <%= logo(variant: :blanc) %>
         <p><%= h(CONTENT['footer_text']) %></p>
         <div class="socials">
           <a href="<%= h(SITE['social']['instagram']) %>" rel="noopener" target="_blank" aria-label="Instagram Eden Park Arcachon"><%= icon('instagram') %></a>
@@ -139,7 +138,7 @@
       </div>
     </div>
     <div class="wrap footer__bottom">
-      <span>© <%= Date.today.year %> Eden Park Arcachon – MAMIL27 SAS. Eden Park® est une marque déposée.</span>
+      <span>© <%= Date.today.year %> Eden Park Arcachon – site de la boutique Eden Park d'Arcachon, exploitée par <%= h(SITE['legal']['company']) %> SAS, franchisé indépendant de la marque. Eden Park® est une marque déposée, utilisée dans le cadre d’un contrat de franchise. Site officiel de la marque : <a href="https://www.eden-park.com" rel="noopener" target="_blank">eden-park.com</a>.</span>
       <ul>
         <li><a href="/mentions-legales/">Mentions légales</a></li>
         <li><a href="/cgv/">CGV</a></li>

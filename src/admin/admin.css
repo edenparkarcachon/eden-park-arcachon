@@ -59,6 +59,8 @@ a { color: inherit; }
 .tag { display: inline-block; font-size: .72rem; padding: 2px 8px; border-radius: 20px; background: var(--sand); }
 .tag--ok { background: #e3f3ea; color: var(--success); }
 .tag--late { background: var(--pink-soft); color: var(--pink-deep); }
+.tag--warn { background: #fdf0d5; color: #8a5a00; }
+.photos-warn { margin: 4px 0 0; padding: 8px 12px; border-radius: 6px; background: #fdf0d5; color: #8a5a00; font-size: .85rem; }
 
 /* Éditeur */
 .cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }

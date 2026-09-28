@@ -6,8 +6,8 @@
   "description": "Boutique Eden Park d'Arcachon : polos, t-shirts, sweats et casquettes brodés aux couleurs du Bassin d'Arcachon. Collection exclusive, livraison en France et DOM-TOM, retrait gratuit en boutique.",
   "phone": "09 77 31 88 06",
   "phone_intl": "+33977318806",
-  "email": "contact@edenpark-arcachon.fr",
-  "email_provisional": true,
+  "email": "edenproarcachon@gmail.com",
+  "email_provisional": false,
   "address": {
     "street": "296 boulevard de la Plage",
     "postal_code": "33120",
@@ -62,7 +62,7 @@
   "legal": {
     "company": "MAMIL27",
     "form": "Société par actions simplifiée (SAS)",
-    "capital": "[PROVISOIRE – capital social à compléter]",
+    "capital": "1 500 €",
     "siren": "911 065 852",
     "siret": "911 065 852 00012",
     "rcs": "RCS Bordeaux 911 065 852",

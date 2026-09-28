@@ -176,7 +176,7 @@
       return '<button type="button" class="pcard" data-edit="' + i + '"><img src="' + esc(previewSrc(p.images[0], p, 0)) + '" alt="" loading="lazy">' +
         '<span class="pcard__body"><span class="pcard__name">' + esc(p.name) + '</span>' +
         '<span class="pcard__meta"><span>' + esc(catName(p.category)) + '</span><strong>' + euro(p.price) + '</strong></span>' +
-        '<span>' + stockSummary(p) + (p.featured ? ' <span class="tag">Accueil</span>' : '') + '</span></span></button>';
+        '<span>' + stockSummary(p) + (p.featured ? ' <span class="tag">Accueil</span>' : '') + ((p.images || []).length < 2 ? ' <span class="tag tag--warn">&lt; 2 photos</span>' : '') + (p.reference ? '' : ' <span class="tag tag--warn">sans réf.</span>') + '</span></span></button>';
     }).join('');
   }
   $('#plist').addEventListener('click', function (e) {
@@ -225,6 +225,7 @@
     $('#f-desc').value = (p.description || []).join('\n\n');
     $('#f-details').value = (p.details || []).join('\n');
     $('#f-care').value = p.care || '';
+    $('#f-ref').value = p.reference || '';
     renderColors();
     renderSizes();
     renderPhotos();
@@ -250,6 +251,8 @@
     p.description = $('#f-desc').value.split(/\n\s*\n/).map(function (s) { return s.replace(/\s+/g, ' ').trim(); }).filter(Boolean);
     p.details = $('#f-details').value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
     p.care = $('#f-care').value.trim();
+    p.reference = $('#f-ref').value.trim();
+    if (!p.reference) delete p.reference;
     p.related = $$('#related input:checked').map(function (i) { return i.value; });
     if (!p.related.length) delete p.related;
     return p;
@@ -371,6 +374,7 @@
         '<button type="button" class="icon" data-p="right" aria-label="Déplacer à droite"' + (i === p.images.length - 1 ? ' disabled' : '') + '>→</button>' +
         '<button type="button" class="icon" data-p="remove" aria-label="Supprimer la photo">🗑</button></div></div></div>';
     }).join('') || '<p class="muted small">Aucune photo pour l’instant.</p>';
+    if (p.images.length < 2) $('#photos').insertAdjacentHTML('beforeend', '<p class="photos-warn" style="grid-column:1/-1">Ajoutez au moins deux photos (devant et dos, ou devant et profil) : c’est demandé par le contrat de franchise.</p>');
     renderPhotoVariants();
   }
   function renderPhotoVariants() {
@@ -480,7 +484,8 @@
     if (!p.short) return fail('Rédigez un résumé d’une phrase.');
     if (!p.sizes.length) return fail('Cochez au moins une taille.');
     if (p.colors.some(function (c) { return !c.name; })) return fail('Donnez un nom à chaque couleur.');
-    if (!p.images.length && !confirm('Ce produit n’a pas de photo. Enregistrer quand même ?')) return;
+    if (p.images.length < 2 && !confirm('Le contrat de franchise demande au moins deux photos par produit (devant et dos, ou devant et profil). Ce produit en a ' + p.images.length + '. Enregistrer quand même ?')) return;
+    if (!p.reference && !confirm('La référence produit n’est pas renseignée (demandée par le contrat de franchise). Enregistrer quand même ?')) return;
     var catalog = JSON.parse(JSON.stringify(state.catalog));
     if (state.isNew) {
       if (catalog.products.some(function (x) { return x.slug === p.slug; })) return fail('Un produit utilise déjà cette adresse.');

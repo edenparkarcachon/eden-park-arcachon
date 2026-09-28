@@ -94,6 +94,9 @@
 <% end -%>
         </ul>
         <p style="margin-top:12px"><strong>Entretien :</strong> <%= h(p['care']) %></p>
+<% unless p['reference'].to_s.empty? -%>
+        <p style="margin-top:6px"><strong>Référence :</strong> <%= h(p['reference']) %></p>
+<% end -%>
       </div>
     </details>
     <details class="acc">

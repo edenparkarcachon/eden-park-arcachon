@@ -1,63 +1,89 @@
-<% l = SITE['legal']; s = SITE['shipping'] -%>
+<% l = SITE['legal']; s = SITE['shipping']; adr = "#{h(SITE['address']['street'])}, #{SITE['address']['postal_code']} #{h(SITE['address']['city'])}" -%>
 <header class="page-head page-head--sand"><div class="wrap"><h1>Conditions générales de vente</h1><p class="lead">En vigueur au <%= Date.today.strftime('%d/%m/%Y') %></p></div></header>
 <section class="section" style="padding-top:40px">
   <div class="wrap prose">
     <div class="notice">Document type à faire valider par un professionnel du droit avant la mise en ligne.</div>
 
     <h2>Article 1 – Objet et champ d'application</h2>
-    <p>Les présentes conditions générales de vente (CGV) régissent les ventes de produits conclues sur le site edenpark-arcachon.fr entre la société <strong><%= h(l['company']) %></strong>, <%= h(l['form']) %>, immatriculée au <%= h(l['rcs']) %>, dont le siège est situé <%= h(SITE['address']['street']) %>, <%= SITE['address']['postal_code'] %> <%= h(SITE['address']['city']) %> (ci-après « Eden Park Arcachon » ou « le Vendeur »), et toute personne physique non professionnelle effectuant un achat sur le site (ci-après « le Client »).</p>
-    <p>Toute commande implique l'acceptation sans réserve des présentes CGV, que le Client reconnaît avoir lues avant de passer commande.</p>
+    <p>Les présentes conditions générales de vente (CGV) définissent les conditions de la vente à distance, sur le site edenpark-arcachon.fr (ci-après « le Site »), des produits de la marque Eden Park proposés par la société <strong><%= h(l['company']) %></strong>, <%= h(l['form']) %> au capital de <%= h(l['capital']) %>, immatriculée au <%= h(l['rcs']) %>, dont le siège est situé <%= adr %> (ci-après « Eden Park Arcachon » ou « le Vendeur »). Elles couvrent la commande, le paiement, la livraison, les retours et le service après-vente.</p>
+    <p>Eden Park Arcachon est une boutique franchisée indépendante, exploitée par <%= h(l['company']) %> sous l'enseigne Eden Park. Le Site est le prolongement sur internet de la boutique d'Arcachon ; il est distinct du site officiel de la marque, eden-park.com, dont l'exploitant n'est pas partie aux ventes conclues sur le Site.</p>
+    <p>Le Site est réservé aux particuliers. Le Client est une personne physique majeure, capable de contracter, qui n'agit pas à des fins professionnelles et achète pour ses besoins personnels, et non en vue de la revente des produits. Eden Park Arcachon se réserve le droit de refuser toute commande dont les quantités ou la fréquence laissent supposer un achat en vue de la revente.</p>
+    <p>Toute commande implique l'acceptation sans réserve des présentes CGV, que le Client reconnaît avoir lues et acceptées avant de valider sa commande. Les CGV applicables sont celles en vigueur au jour de la commande.</p>
 
     <h2>Article 2 – Produits</h2>
-    <p>Les produits proposés sont ceux figurant sur le site au jour de la consultation, dans la limite des stocks disponibles. Les photographies sont les plus fidèles possible mais ne peuvent assurer une similitude parfaite, notamment pour les couleurs. Les produits brodés étant réalisés en petites séries, de légères variations peuvent exister d'une pièce à l'autre.</p>
+    <p>Les produits proposés sont ceux figurant sur le Site au jour de la consultation. Chaque produit est présenté avec une fiche indiquant ses caractéristiques essentielles : référence, matières, coupe, tailles disponibles, conseils d'entretien. Un guide des tailles est proposé pour aider le Client dans son choix.</p>
+    <p>Les photographies sont les plus fidèles possible mais ne peuvent assurer une similitude parfaite, notamment pour les couleurs, qui peuvent varier selon l'écran utilisé. Les produits brodés étant réalisés en petites séries, de légères variations peuvent exister d'une pièce à l'autre. Eden Park Arcachon se réserve le droit de faire évoluer à tout moment l'assortiment proposé.</p>
 
     <h2>Article 3 – Prix</h2>
-    <p>Les prix sont indiqués en euros toutes taxes comprises (TTC), hors frais de livraison. Les frais de livraison sont indiqués avant la validation de la commande. Eden Park Arcachon se réserve le droit de modifier ses prix à tout moment ; les produits sont facturés sur la base des tarifs en vigueur au moment de la validation de la commande.</p>
-    <p>En cas de réduction de prix (promotion ou soldes), le prix de référence barré correspond au prix le plus bas pratiqué par Eden Park Arcachon au cours des trente jours précédant l’application de la réduction, conformément à l’article L112-1-1 du Code de la consommation. Les réductions s’appliquent pendant la durée indiquée et dans la limite des stocks disponibles.</p>
-    <p>Les codes promotionnels sont valables dans les conditions indiquées lors de leur diffusion (durée, montant minimum, articles concernés). Un seul code peut être utilisé par commande ; ils ne sont ni cumulables, ni remboursables, ni échangeables contre des espèces.</p>
+    <p>Les prix sont indiqués en euros toutes taxes comprises (TTC), sur la base de la TVA applicable au jour de la commande, hors frais de livraison. Les frais de livraison sont indiqués au Client avant la validation de sa commande. Les produits sont facturés au prix en vigueur au moment de la validation de la commande ; le prix est alors ferme.</p>
+    <p>En cas d'erreur manifeste sur le prix affiché (prix dérisoire ou sans rapport avec la valeur du produit), Eden Park Arcachon pourra annuler la commande et en rembourser intégralement le montant, après en avoir informé le Client.</p>
+    <p>En cas de réduction de prix (promotion ou soldes), le prix de référence barré correspond au prix le plus bas pratiqué par Eden Park Arcachon au cours des trente jours précédant l'application de la réduction, conformément à l'article L112-1-1 du Code de la consommation. Les réductions s'appliquent pendant la durée indiquée et dans la limite des stocks disponibles.</p>
     <p>Pour les livraisons dans les DOM-TOM, des droits et taxes locales (octroi de mer notamment) peuvent être exigés à la réception et restent à la charge du Client.</p>
 
     <h2>Article 4 – Commande</h2>
-    <p>Le Client sélectionne les produits, leur couleur, leur taille et leur quantité, puis choisit son mode de livraison. Après avoir accepté les présentes CGV, il est redirigé vers la page de paiement sécurisée où il renseigne ses coordonnées et procède au paiement. La commande n'est définitive qu'après confirmation du paiement. Un e-mail de confirmation récapitulant la commande est alors adressé au Client.</p>
-    <p>La création d'un compte client n'est pas nécessaire pour commander. Eden Park Arcachon se réserve le droit d'annuler toute commande d'un Client avec lequel existerait un litige relatif au paiement d'une commande antérieure.</p>
+    <p>Le Client sélectionne les produits, leur couleur, leur taille et leur quantité, puis les ajoute à son panier. Avant de valider, il vérifie le détail de sa commande, son prix total et les frais de livraison, choisit son mode de livraison et corrige d'éventuelles erreurs. Après avoir accepté les présentes CGV, il est redirigé vers la page de paiement sécurisée, où il renseigne ses coordonnées et procède au paiement.</p>
+    <p>La commande n'est définitive qu'après confirmation du paiement. Un e-mail de confirmation récapitulant la commande et valant reçu est alors adressé au Client. La création d'un compte client n'est pas nécessaire pour commander.</p>
+    <p>Eden Park Arcachon se réserve le droit d'annuler ou de refuser toute commande d'un Client avec lequel existerait un litige relatif au paiement d'une commande antérieure, ou en cas de suspicion de fraude.</p>
 
-    <h2>Article 5 – Paiement</h2>
-    <p>Le paiement est exigible immédiatement à la commande. Il s'effectue par carte bancaire (CB, Visa, Mastercard, American Express), Apple Pay ou Google Pay, via le prestataire de paiement sécurisé Stripe. Les données bancaires du Client sont chiffrées et ne sont à aucun moment transmises ni conservées par Eden Park Arcachon.</p>
+    <h2>Article 5 – Disponibilité</h2>
+    <p>Les offres de produits sont valables dans la limite des stocks disponibles. La disponibilité est indiquée sur chaque fiche produit. Lorsqu'un produit n'est plus en stock, il peut être proposé « sur commande » : le délai d'expédition indiqué sur la fiche produit (environ <%= SITE['shipping']['backorder_days'] || 15 %> jours) s'applique alors, et le Client en est informé avant de valider sa commande.</p>
+    <p>Si, malgré ces précautions, un produit commandé s'avère indisponible, le Client en est informé dans les meilleurs délais et peut choisir d'attendre le réassort ou d'être remboursé du produit concerné, dans un délai de 14 jours au plus.</p>
 
-    <h2>Article 6 – Livraison</h2>
+    <h2>Article 6 – Paiement</h2>
+    <p>Le paiement est exigible immédiatement à la commande. Il s'effectue par carte bancaire (CB, Visa, Mastercard, American Express), Apple Pay ou Google Pay, via le prestataire de paiement sécurisé Stripe, conformément à la directive européenne sur les services de paiement (DSP2), avec authentification forte du porteur lorsque la banque l'exige.</p>
+    <p>Les données bancaires du Client sont chiffrées et transmises directement à Stripe ; elles ne sont à aucun moment transmises ni conservées par Eden Park Arcachon. Afin de lutter contre la fraude, Stripe peut analyser les transactions et en déterminer le niveau de risque.</p>
+
+    <h2>Article 7 – Livraison</h2>
     <p>Les produits sont livrés à l'adresse indiquée par le Client lors de la commande, en France métropolitaine et dans les DOM-TOM, par Colissimo :</p>
     <ul>
       <li>France métropolitaine : <%= euro(s['metro_price']) %>, offerte à partir de <%= euro(s['free_threshold']) %> d'achat – délai indicatif <%= s['metro_delay'] %> après expédition ;</li>
       <li>DOM-TOM : <%= euro(s['domtom_price']) %> – délai indicatif <%= s['domtom_delay'] %> après expédition ;</li>
-      <li>Retrait en boutique (<%= h(SITE['address']['street']) %>, <%= h(SITE['address']['city']) %>) : gratuit.</li>
+      <li>Retrait à la boutique (<%= adr %>) : gratuit, dès que le Client est prévenu que sa commande est prête.</li>
     </ul>
-    <p>Les commandes sont expédiées sous 1 à 2 jours ouvrés. Conformément à l'article L216-1 du Code de la consommation, à défaut d'indication, les produits sont livrés au plus tard 30 jours après la conclusion du contrat. En cas de retard, le Client peut, après mise en demeure restée sans effet, résoudre le contrat dans les conditions des articles L216-6 et suivants du Code de la consommation.</p>
-    <p>Le Client est invité à vérifier l'état du colis à la réception et à formuler auprès du transporteur toute réserve en cas d'anomalie.</p>
+    <p>Les commandes en stock sont expédiées sous 1 à 2 jours ouvrés. Conformément à l'article L216-1 du Code de la consommation, à défaut d'indication, les produits sont livrés au plus tard 30 jours après la conclusion du contrat. En cas de retard, le Client peut, après mise en demeure restée sans effet, résoudre le contrat dans les conditions des articles L216-6 et suivants du Code de la consommation.</p>
+    <p>Le Client veille à indiquer une adresse complète et exacte. Si le colis est retourné à Eden Park Arcachon en raison d'une adresse erronée ou incomplète, ou faute d'avoir été retiré, une nouvelle expédition peut être organisée à la demande du Client, les frais correspondants restant à sa charge.</p>
 
-    <h2>Article 7 – Droit de rétractation</h2>
-    <p>Conformément à l'article L221-18 du Code de la consommation, le Client dispose d'un délai de 14 jours à compter de la réception des produits pour exercer son droit de rétractation, sans avoir à justifier de motif. <strong>Eden Park Arcachon étend ce délai à <%= SITE['return_days'] %> jours.</strong></p>
-    <p>Pour exercer ce droit, le Client notifie sa décision par e-mail à <a href="mailto:<%= h(SITE['email']) %>"><%= h(SITE['email']) %></a>, par le <a href="/contact/">formulaire de contact</a> ou au moyen du formulaire type ci-dessous, puis renvoie les produits non portés, non lavés, dans leur état et emballage d'origine avec leurs étiquettes, au plus tard 14 jours après sa notification. Les frais de retour sont à la charge du Client. Le Client peut également rapporter les produits directement en boutique.</p>
-    <p>Eden Park Arcachon rembourse la totalité des sommes versées, y compris les frais de livraison initiaux (sur la base du tarif standard), dans un délai de 14 jours à compter de la réception de la décision de rétractation ; le remboursement peut être différé jusqu'à la récupération des produits. Il est effectué avec le même moyen de paiement que celui utilisé pour la commande.</p>
-    <p>Conformément à l'article L221-28 du Code de la consommation, le droit de rétractation ne s'applique pas aux produits confectionnés selon les spécifications du Client ou nettement personnalisés.</p>
+    <h2>Article 8 – Réception</h2>
+    <p>Le Client est invité à vérifier l'état du colis en présence du livreur et, en cas de colis endommagé ou ouvert, à formuler des réserves précises auprès du transporteur. Tout produit manquant, endommagé ou non conforme à la commande doit être signalé à Eden Park Arcachon dans les meilleurs délais, par e-mail à <a href="mailto:<%= h(SITE['email']) %>"><%= h(SITE['email']) %></a> ou au <%= h(SITE['phone']) %>, afin qu'une solution soit trouvée rapidement. Ce signalement ne prive pas le Client des garanties légales prévues à l'article 11.</p>
+
+    <h2 id="retours">Article 9 – Droit de rétractation, retours et échanges</h2>
+    <p>Conformément à l'article L221-18 du Code de la consommation, le Client dispose d'un délai de 14 jours à compter de la réception des produits pour exercer son droit de rétractation, sans avoir à justifier de motif ni à payer de pénalité. <strong>Eden Park Arcachon étend ce délai à <%= SITE['return_days'] %> jours.</strong></p>
+    <p>Pour exercer ce droit, le Client notifie sa décision par e-mail à <a href="mailto:<%= h(SITE['email']) %>"><%= h(SITE['email']) %></a>, par le <a href="/contact/">formulaire de contact</a> ou au moyen du formulaire type ci-dessous, en indiquant son numéro de commande, puis renvoie les produits au plus tard 14 jours après sa notification. Les frais de retour sont à la charge du Client, sauf produit défectueux ou erreur du Vendeur.</p>
+    <p>Les produits doivent être retournés dans un état permettant leur remise en vente : non portés, non lavés, dans leur état et emballage d'origine, avec leurs étiquettes. Le Client peut les essayer comme il le ferait en boutique ; sa responsabilité peut être engagée en cas de dépréciation résultant de manipulations autres que celles nécessaires pour établir leur nature, leurs caractéristiques et leur bon fonctionnement.</p>
+    <p><strong>Lieu des retours.</strong> Les retours et échanges des produits achetés sur le Site s'effectuent exclusivement auprès d'Eden Park Arcachon : par voie postale, à l'adresse de la boutique (<%= h(l['company']) %> – Eden Park Arcachon, <%= adr %>), ou directement à la boutique d'Arcachon. Ils ne peuvent en aucun cas être effectués dans les autres points de vente de la marque Eden Park, qu'il s'agisse de boutiques ou de sites internet.</p>
+    <p>Eden Park Arcachon rembourse la totalité des sommes versées, y compris les frais de livraison initiaux (sur la base du tarif de livraison standard), dans un délai de 14 jours à compter de la réception de la décision de rétractation ; le remboursement peut être différé jusqu'à la récupération des produits ou jusqu'à ce que le Client ait fourni une preuve de leur expédition. Il est effectué avec le même moyen de paiement que celui utilisé pour la commande. Pour un échange de taille ou de coloris, le Client peut se rendre à la boutique d'Arcachon, ou retourner le produit et passer une nouvelle commande.</p>
+    <p>Conformément à l'article L221-28 du Code de la consommation, le droit de rétractation ne s'applique pas aux produits confectionnés selon les spécifications du Client ou nettement personnalisés (voir article 10).</p>
     <h3>Formulaire de rétractation</h3>
-    <p><em>À l'attention de <%= h(l['company']) %> – Eden Park Arcachon, <%= h(SITE['address']['street']) %>, <%= SITE['address']['postal_code'] %> <%= h(SITE['address']['city']) %> – <%= h(SITE['email']) %> :<br>
+    <p><em>À l'attention de <%= h(l['company']) %> – Eden Park Arcachon, <%= adr %> – <%= h(SITE['email']) %> :<br>
       Je vous notifie par la présente ma rétractation du contrat portant sur la vente du bien ci-dessous : […]<br>
       Commandé le […] / reçu le […] – N° de commande : […]<br>
       Nom du consommateur : […] – Adresse : […]<br>
       Date et signature (en cas d'envoi papier) : […]</em></p>
 
-    <h2>Article 8 – Garanties légales</h2>
-    <p>Tous les produits bénéficient de la garantie légale de conformité (articles L217-3 et suivants du Code de la consommation) et de la garantie des vices cachés (articles 1641 et suivants du Code civil).</p>
-    <p>Le consommateur dispose d'un délai de deux ans à compter de la délivrance du bien pour obtenir la mise en œuvre de la garantie légale de conformité en cas d'apparition d'un défaut de conformité. Durant ce délai, le consommateur n'est tenu d'établir que l'existence du défaut de conformité et non la date d'apparition de celui-ci. La garantie légale de conformité emporte obligation de fournir toutes les mises à jour nécessaires au maintien de la conformité du bien. Le consommateur peut obtenir la réparation ou le remplacement du bien, ou à défaut une réduction du prix ou la résolution du contrat. Le consommateur peut également décider de mettre en œuvre la garantie contre les défauts cachés de la chose vendue ; il peut alors choisir entre la résolution de la vente ou une réduction du prix.</p>
+    <h2>Article 10 – Produits personnalisés</h2>
+    <p>Les demandes de personnalisation font l'objet d'un échange préalable avec la boutique, via la page <a href="/personnalisation/">Personnalisation</a>. Le prix, le délai et les caractéristiques de la personnalisation sont confirmés par écrit au Client avant toute commande. Ces produits étant confectionnés selon ses spécifications, ils ne peuvent être ni repris ni échangés, sauf défaut de conformité.</p>
 
-    <h2>Article 9 – Responsabilité</h2>
-    <p>Eden Park Arcachon ne saurait être tenue responsable de l'inexécution du contrat en cas de force majeure, de perturbation ou de grève des services postaux et de transport, ou du fait du Client.</p>
+    <h2>Article 11 – Garanties légales</h2>
+    <p>Tous les produits bénéficient de la garantie légale de conformité (articles L217-3 et suivants du Code de la consommation) et de la garantie des vices cachés (articles 1641 et suivants du Code civil), indépendamment de toute garantie commerciale.</p>
+    <p>Le consommateur dispose d'un délai de deux ans à compter de la délivrance du bien pour obtenir la mise en œuvre de la garantie légale de conformité en cas d'apparition d'un défaut de conformité. Durant ce délai, le consommateur n'est tenu d'établir que l'existence du défaut de conformité et non la date d'apparition de celui-ci. Le consommateur peut obtenir la réparation ou le remplacement du bien, ou à défaut une réduction du prix ou la résolution du contrat. Le Vendeur peut refuser le mode de mise en conformité choisi s'il est impossible ou entraîne des coûts disproportionnés au regard de l'autre option ; ce refus est alors motivé par écrit.</p>
+    <p>Le consommateur peut également décider de mettre en œuvre la garantie contre les défauts cachés de la chose vendue dans un délai de deux ans à compter de leur découverte ; il peut alors choisir entre la résolution de la vente ou une réduction du prix (article 1644 du Code civil).</p>
 
-    <h2>Article 10 – Données personnelles</h2>
-    <p>Les données collectées lors de la commande sont nécessaires à son traitement et à la relation client. Elles sont traitées conformément à notre <a href="/confidentialite/">politique de confidentialité</a>.</p>
+    <h2>Article 12 – Responsabilité et force majeure</h2>
+    <p>Eden Park Arcachon ne saurait être tenue responsable des perturbations du réseau internet, d'une indisponibilité temporaire du Site, ni des dommages indirects, sous réserve des garanties légales dues au Client. Elle ne saurait davantage être tenue responsable de l'inexécution du contrat en cas de force majeure au sens de l'article 1218 du Code civil (notamment grève des services postaux et de transport, intempéries, panne d'électricité ou interdiction de circuler décidée par les autorités), ou du fait du Client.</p>
 
-    <h2>Article 11 – Médiation et litiges</h2>
-    <p>En cas de réclamation, le Client peut contacter le service client au <%= h(SITE['phone']) %> ou à <a href="mailto:<%= h(SITE['email']) %>"><%= h(SITE['email']) %></a>. À défaut de solution amiable, le Client peut recourir gratuitement au médiateur de la consommation : <span class="<%= 'todo' if l['mediator'].include?('PROVISOIRE') %>"><%= h(l['mediator']) %></span>, ou à la plateforme européenne de règlement en ligne des litiges : <a href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noopener">ec.europa.eu/consumers/odr</a>.</p>
+    <h2>Article 13 – Propriété intellectuelle</h2>
+    <p>La marque Eden Park, ses logos et ses visuels sont la propriété de leurs titulaires et sont utilisés par Eden Park Arcachon dans le cadre de son contrat de franchise. L'ensemble des contenus du Site (textes, photographies, visuels, logos, mise en page) est protégé par le droit de la propriété intellectuelle ; toute reproduction ou représentation, totale ou partielle, sans autorisation écrite préalable est interdite.</p>
+
+    <h2>Article 14 – Codes promotionnels et avantages</h2>
+    <p>Des codes promotionnels peuvent être émis par Eden Park Arcachon à l'occasion d'opérations ponctuelles. Ils sont valables dans les conditions indiquées lors de leur diffusion (durée, montant minimum, articles concernés) et se saisissent dans le panier avant le paiement. Un seul code peut être utilisé par commande ; ils ne sont ni cumulables, ni remboursables, ni échangeables contre des espèces.</p>
+    <p>Les cartes cadeaux, avoirs et avantages de fidélité émis par la marque Eden Park ou par d'autres points de vente du réseau ne peuvent pas être utilisés sur le Site.</p>
+
+    <h2>Article 15 – Données personnelles</h2>
+    <p>Les données collectées lors de la commande sont nécessaires à son traitement, à la livraison, à la relation client et à la prévention de la fraude. <%= h(l['company']) %> en est le responsable du traitement. Elles sont traitées conformément à notre <a href="/confidentialite/">politique de confidentialité</a>, qui précise les droits du Client et la manière de les exercer.</p>
+
+    <h2>Article 16 – Réclamations, médiation et droit applicable</h2>
+    <p>En cas de réclamation, le Client peut contacter le service client du lundi au samedi au <%= h(SITE['phone']) %> ou à <a href="mailto:<%= h(SITE['email']) %>"><%= h(SITE['email']) %></a>. Les parties rechercheront en priorité une solution amiable.</p>
+    <p>À défaut de solution amiable dans un délai raisonnable, le Client peut recourir gratuitement, dans un délai d'un an à compter de sa réclamation écrite, au médiateur de la consommation : <span class="<%= 'todo' if l['mediator'].include?('PROVISOIRE') %>"><%= h(l['mediator']) %></span>.</p>
     <p>Les présentes CGV sont soumises au droit français. À défaut de règlement amiable, les tribunaux français sont compétents dans les conditions de droit commun.</p>
   </div>
 </section>
