@@ -8,7 +8,18 @@
       "meta_title": "Polos Eden Park Bassin d'Arcachon – Collection exclusive",
       "meta_description": "Polos Eden Park brodés Dune du Pyla et queue de baleine de la jetée Thiers. Collection exclusive de la boutique Eden Park d'Arcachon.",
       "intro": "Le polo, c'est la pièce emblématique d'Eden Park depuis 1987. À Arcachon, nous l'avons brodé aux couleurs de notre Bassin : la silhouette de la Dune du Pyla, la queue de baleine de la jetée Thiers… Des modèles exclusifs, pensés et personnalisés dans notre boutique du boulevard de la Plage.",
-      "image": "produits/polo-dune-du-pyla-marine-porte.jpg"
+      "image": "produits/polo-dune-du-pyla-marine-porte.jpg",
+      "default_description": [
+        "Le polo, pièce emblématique d'Eden Park, brodé aux couleurs du Bassin d'Arcachon dans notre boutique du boulevard de la Plage.",
+        "Une pièce intemporelle, à porter en toute saison, sur le port comme en ville."
+      ],
+      "default_details": [
+        "Maille piqué de coton",
+        "Col polo, patte de boutonnage 2 boutons",
+        "Coupe droite",
+        "Modèle exclusif boutique Eden Park Arcachon"
+      ],
+      "default_care": "Lavage en machine à 30 °C, sur l'envers. Ne pas utiliser de sèche-linge. Repassage doux sur l'envers en évitant la broderie."
     },
     {
       "slug": "t-shirts",
@@ -17,7 +28,18 @@
       "meta_title": "T-shirts Eden Park Arcachon – Brodés Bassin d'Arcachon",
       "meta_description": "T-shirts Eden Park en coton brodés Bassin d'Arcachon, exclusivité de la boutique d'Arcachon. Livraison en France et retrait en boutique.",
       "intro": "Des t-shirts en coton, simples et bien coupés, signés d'une broderie inspirée du Bassin. Parfaits pour une journée à la plage d'Arcachon, un apéritif au Moulleau ou un retour de bateau au Cap Ferret.",
-      "image": null
+      "image": null,
+      "default_description": [
+        "Un t-shirt en coton, simple et bien coupé, signé d'une broderie inspirée du Bassin d'Arcachon.",
+        "Parfait pour une journée à la plage, un apéritif au Moulleau ou un retour de bateau au Cap Ferret."
+      ],
+      "default_details": [
+        "100 % coton",
+        "Broderie poitrine Bassin d'Arcachon",
+        "Coupe droite",
+        "Modèle exclusif boutique Eden Park Arcachon"
+      ],
+      "default_care": "Lavage en machine à 30 °C, sur l'envers. Ne pas utiliser de sèche-linge. Repassage doux sur l'envers en évitant la broderie."
     },
     {
       "slug": "sweats",
@@ -26,7 +48,18 @@
       "meta_title": "Sweats Eden Park Arcachon – Collection Bassin d'Arcachon",
       "meta_description": "Sweats Eden Park brodés Bassin d'Arcachon, idéals pour la mi-saison sur le Bassin. Collection exclusive de la boutique Eden Park d'Arcachon.",
       "intro": "Quand le vent se lève sur le Bassin, on enfile un sweat Eden Park. Molleton de coton, coupe droite et broderie exclusive Bassin d'Arcachon : l'essentiel de la mi-saison.",
-      "image": null
+      "image": null,
+      "default_description": [
+        "Un sweat en molleton de coton, coupe droite, brodé aux couleurs du Bassin d'Arcachon.",
+        "L'essentiel de la mi-saison, à porter dès que le vent se lève sur le Bassin."
+      ],
+      "default_details": [
+        "Molleton de coton",
+        "Broderie poitrine Bassin d'Arcachon",
+        "Coupe droite",
+        "Modèle exclusif boutique Eden Park Arcachon"
+      ],
+      "default_care": "Lavage en machine à 30 °C, sur l'envers. Ne pas utiliser de sèche-linge. Repassage doux en évitant la broderie."
     },
     {
       "slug": "casquettes-accessoires",
@@ -35,7 +68,18 @@
       "meta_title": "Casquettes Eden Park Bassin d'Arcachon – Accessoires",
       "meta_description": "Casquettes Eden Park à écusson Bassin d'Arcachon et accessoires exclusifs de la boutique Eden Park d'Arcachon. Livraison France & DOM-TOM.",
       "intro": "La touche finale d'une silhouette réussie : notre casquette marine à écusson brodé Bassin d'Arcachon, et les accessoires signés de la boutique.",
-      "image": "produits/casquette-bassin-arcachon-ecusson-rose.jpg"
+      "image": "produits/casquette-bassin-arcachon-ecusson-rose.jpg",
+      "default_description": [
+        "Un accessoire signé Eden Park, brodé aux couleurs du Bassin d'Arcachon.",
+        "Une pièce facile à associer à nos polos et sweats de la collection."
+      ],
+      "default_details": [
+        "Écusson brodé Bassin d'Arcachon",
+        "Six panneaux, visière incurvée",
+        "Patte de serrage réglable à l'arrière",
+        "Taille unique"
+      ],
+      "default_care": "Nettoyage à la main à l'eau froide. Ne pas passer en machine. Sécher à plat."
     }
   ],
   "products": [

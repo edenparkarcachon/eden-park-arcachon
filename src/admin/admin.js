@@ -226,6 +226,7 @@
     $('#f-details').value = (p.details || []).join('\n');
     $('#f-care').value = p.care || '';
     $('#f-ref').value = p.reference || '';
+    applyCategoryDefaults(p.category);
     renderColors();
     renderSizes();
     renderPhotos();
@@ -257,6 +258,17 @@
     if (!p.related.length) delete p.related;
     return p;
   }
+
+  // Pré-remplit description/détails/entretien avec le modèle de la catégorie, uniquement
+  // si le champ est encore vide (ne touche jamais à un texte déjà saisi).
+  function applyCategoryDefaults(catSlug) {
+    var c = state.catalog.categories.filter(function (x) { return x.slug === catSlug; })[0];
+    if (!c) return;
+    if (!$('#f-desc').value.trim() && (c.default_description || []).length) $('#f-desc').value = c.default_description.join('\n\n');
+    if (!$('#f-details').value.trim() && (c.default_details || []).length) $('#f-details').value = c.default_details.join('\n');
+    if (!$('#f-care').value.trim() && c.default_care) $('#f-care').value = c.default_care;
+  }
+  $('#f-cat').addEventListener('change', function () { applyCategoryDefaults($('#f-cat').value); state.dirty = true; });
 
   ed.addEventListener('input', function (e) {
     state.dirty = true;
@@ -1010,7 +1022,7 @@
     var countOf = function (slug) { return state.catalog.products.filter(function (p) { return p.category === slug; }).length; };
     box.appendChild(listEl(holder, {
       k: 'cats', label: '', min: 1, addLabel: 'Ajouter une catégorie',
-      template: { slug: '', name: '', title: '', intro: '', meta_title: '', meta_description: '', image: '' },
+      template: { slug: '', name: '', title: '', intro: '', meta_title: '', meta_description: '', image: '', default_description: [], default_details: [], default_care: '' },
       itemTitle: function (c) { var n = countOf(c.slug); return (c.name || 'Nouvelle catégorie') + (c.slug && n ? ' · ' + n + ' produit' + (n > 1 ? 's' : '') : ''); },
       canDelete: function (c) {
         var n = countOf(c.slug);
@@ -1023,7 +1035,10 @@
         { k: 'intro', type: 'textarea', label: 'Texte d’introduction', rows: 3 },
         { k: 'image', type: 'imagepath', label: 'Photo (page d’accueil)', optional: true },
         { k: 'meta_title', label: 'Titre pour Google (60 caractères max.)' },
-        { k: 'meta_description', type: 'textarea', label: 'Description pour Google (160 caractères max.)', rows: 2 }
+        { k: 'meta_description', type: 'textarea', label: 'Description pour Google (160 caractères max.)', rows: 2 },
+        { k: 'default_description', type: 'paragraphs', label: 'Description type pour un nouveau produit', rows: 4, help: 'Proposée automatiquement (et modifiable) quand tu crées un produit dans cette catégorie. Laisse une ligne vide entre deux paragraphes.' },
+        { k: 'default_details', type: 'lines', label: 'Détails type (matières, coupe…)', rows: 4, help: 'Un détail par ligne.' },
+        { k: 'default_care', label: 'Entretien type', help: 'Ex. « Lavage en machine à 30 °C… »' }
       ]
     }));
     state.catsExisting = existing;
