@@ -605,7 +605,7 @@ def product_card(p, heading: "h3")
     <article class="card" data-slug="#{p['slug']}" data-cat="#{p['category']}" data-price="#{effective_price(p)}" data-sale="#{offer ? 1 : 0}" data-sizes="#{h(sizes_attr)}" data-colors="#{h(colors_attr)}" data-fit="#{h(p['fit'])}" data-date="#{p['date']}" data-pop="#{p['popularity']}">
       <div class="card__media">
         <div class="badges">#{badges}</div>
-        #{img_tag(first)}
+        #{first ? img_tag(first) : ''}
         #{second ? img_tag(second, cls: 'alt', alt: '') : ''}
         #{quick}
       </div>
