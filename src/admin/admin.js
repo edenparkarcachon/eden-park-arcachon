@@ -910,8 +910,12 @@
         { k: 'eyebrow', label: 'Petit titre' }, { k: 'title', label: 'Titre' }, { k: 'lead', type: 'textarea', label: 'Chapeau' },
         { k: 'text', type: 'textarea', label: 'Texte', rows: 5 }, { k: 'button_label', label: 'Texte du bouton' }] },
       { type: 'list', k: 'emblems', label: 'Emblèmes du Bassin', itemLabel: 'Emblème', max: 6, addLabel: 'Ajouter un emblème',
-        template: { icon: 'dune', title: '', text: '' },
-        fields: [{ k: 'icon', type: 'select', label: 'Dessin', options: [['dune', 'Dune'], ['whale', 'Queue de baleine'], ['pine', 'Pin']] }, { k: 'title', label: 'Titre' }, { k: 'text', type: 'textarea', label: 'Texte', rows: 2 }] },
+        template: { icon: 'dune', title: '', text: '', photo: { src: '', alt: '' } },
+        fields: [
+          { k: 'icon', type: 'select', label: 'Dessin (utilisé tant qu’aucune photo n’est envoyée ci-dessous)', options: [['dune', 'Dune'], ['whale', 'Queue de baleine'], ['pine', 'Pin']] },
+          { k: 'photo', type: 'image', label: 'Vraie photo (facultatif, remplace le dessin)', optional: true },
+          { k: 'title', label: 'Titre' }, { k: 'text', type: 'textarea', label: 'Texte', rows: 2 }
+        ] },
       { type: 'group', k: 'perso', label: 'Personnalisation', fields: [
         IMG('image'), { k: 'eyebrow', label: 'Petit titre' }, { k: 'title', label: 'Titre' }, { k: 'lead', type: 'textarea', label: 'Texte' },
         { k: 'points', type: 'lines', label: 'Points forts (un par ligne)' }, { k: 'button_label', label: 'Texte du bouton' }] },

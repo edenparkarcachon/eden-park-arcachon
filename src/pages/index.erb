@@ -82,7 +82,7 @@
 <% unless hm['emblems'].empty? -%>
     <div class="emblems">
 <% hm['emblems'].each do |em| -%>
-      <div class="emblem fade-up"><%= EMBLEMS[em['icon']] || EMBLEMS['dune'] %><h3><%= h(em['title']) %></h3><p><%= h(em['text']) %></p></div>
+      <div class="emblem fade-up"><%= (em['photo'] && !em['photo']['src'].to_s.empty?) ? content_img(em['photo'], sizes: '64px') : (EMBLEMS[em['icon']] || EMBLEMS['dune']) %><h3><%= h(em['title']) %></h3><p><%= h(em['text']) %></p></div>
 <% end -%>
     </div>
 <% end -%>

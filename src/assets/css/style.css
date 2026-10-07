@@ -286,6 +286,7 @@ ul, ol { padding-left: 1.2em; }
 .emblems { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 50px; }
 .emblem { background: #fff; border: 1px solid var(--line); padding: 30px 26px; }
 .emblem svg { width: 64px; height: 40px; color: var(--navy-950); margin-bottom: 18px; }
+.emblem img { width: 64px; height: 64px; object-fit: cover; border-radius: 50%; margin-bottom: 18px; display: block; }
 .emblem h3 { font-size: 1.1rem; margin-bottom: .4em; }
 .emblem p { color: var(--muted); font-size: .95rem; margin: 0; }
 @media (max-width: 860px) { .emblems { grid-template-columns: 1fr; } }
