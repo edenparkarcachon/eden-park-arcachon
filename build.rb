@@ -525,6 +525,12 @@ def stars(value, cls: "stars")
   %(<span class="#{cls}" aria-hidden="true">#{'★' * full}#{'☆' * (5 - full)}</span>)
 end
 
+# Référence produit telle que tapée dans l'admin (espaces, ponctuation) mise au format
+# identifiant simple attendu par Google (sku/mpn) : l'affichage sur l'étiquette n'est pas touché.
+def sku_of(reference)
+  reference.to_s.strip.gsub(/\s+/, "-")
+end
+
 def product_schema(p)
   imgs = product_images(p).reject { |i| i["placeholder"] }.map { |i| abs_url(i["src"]) }
   list = reviews_for(p)
@@ -539,8 +545,8 @@ def product_schema(p)
     "@context" => "https://schema.org",
     "@type" => "Product",
     "name" => "#{p['name'].gsub(/[«»]/, '').squeeze(' ').strip} – Eden Park Arcachon",
-    "sku" => p["reference"].to_s.empty? ? "EPA-#{p['slug'].upcase}" : p["reference"],
-    "mpn" => p["reference"].to_s.empty? ? nil : p["reference"],
+    "sku" => p["reference"].to_s.strip.empty? ? "EPA-#{p['slug'].upcase}" : sku_of(p["reference"]),
+    "mpn" => p["reference"].to_s.strip.empty? ? nil : sku_of(p["reference"]),
     "description" => p["description"].join(" "),
     "image" => imgs.empty? ? nil : imgs,
     "brand" => { "@type" => "Brand", "name" => "Eden Park" },
@@ -963,7 +969,7 @@ feed_items = PRODUCTS.flat_map do |p|
     <<~ITEM
       <item>
         <g:id>#{xml(slugify("#{p['slug']}-#{c['name']}-#{sz}"))}</g:id>
-        <g:item_group_id>#{xml(p['slug'])}</g:item_group_id>#{p['reference'].to_s.empty? ? '' : "\n        <g:mpn>#{xml(p['reference'])}</g:mpn>"}
+        <g:item_group_id>#{xml(p['slug'])}</g:item_group_id>#{p['reference'].to_s.strip.empty? ? '' : "\n        <g:mpn>#{xml(sku_of(p['reference']))}</g:mpn>"}
         <g:title>#{xml("#{plain} Eden Park – #{c['name']}#{sz == 'Taille unique' ? '' : " – taille #{sz}"}")}</g:title>
         <g:description>#{xml(p['description'].join(' '))}</g:description>
         <g:link>#{xml(abs_url(product_url(p)))}</g:link>
